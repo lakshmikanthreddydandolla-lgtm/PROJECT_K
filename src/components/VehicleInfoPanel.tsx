@@ -16,61 +16,274 @@ function VehicleInfoPanel({
         zIndex: 20,
         right: "40px",
         bottom: "80px",
-        width: "320px",
-        padding: "25px",
-        background: "rgba(5, 5, 5, 0.92)",
-        border: "1px solid rgba(255,255,255,0.2)",
+
+        width: "360px",
+        maxWidth: "calc(100vw - 40px)",
+
+        padding: "28px",
+
+        background:
+          "linear-gradient(145deg, rgba(12,12,12,0.96), rgba(4,4,4,0.94))",
+
+        border:
+          "1px solid rgba(255,255,255,0.16)",
+
+        borderRadius: "2px",
+
         color: "white",
-        backdropFilter: "blur(10px)",
+
+        backdropFilter: "blur(18px)",
+
+        boxShadow:
+          "0 20px 60px rgba(0,0,0,0.45)",
+
+        animation:
+          "vehiclePanelEnter 0.35s ease-out",
       }}
     >
-      <p
+
+      {/* =====================================================
+          TOP ACCENT
+      ===================================================== */}
+
+      <div
         style={{
-          margin: "0 0 12px",
-          fontSize: "10px",
-          letterSpacing: "4px",
-          opacity: 0.5,
+          width: "35px",
+          height: "2px",
+          background: "white",
+          marginBottom: "20px",
+          opacity: 0.8,
+        }}
+      />
+
+
+      {/* =====================================================
+          CATEGORY
+      ===================================================== */}
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "10px",
         }}
       >
-        VEHICLE DETAIL
-      </p>
+
+        <p
+          style={{
+            margin: 0,
+
+            fontSize: "9px",
+
+            letterSpacing: "3px",
+
+            textTransform: "uppercase",
+
+            opacity: 0.45,
+          }}
+        >
+          VEHICLE DETAIL
+        </p>
+
+        <span
+          style={{
+            fontSize: "9px",
+
+            letterSpacing: "2px",
+
+            opacity: 0.35,
+          }}
+        >
+          REVUELTO
+        </span>
+
+      </div>
+
+
+      {/* =====================================================
+          TITLE
+      ===================================================== */}
 
       <h2
         style={{
-          margin: "0 0 15px",
-          fontSize: "28px",
+          margin: "0 0 18px",
+
+          fontSize: "30px",
+
+          fontWeight: 500,
+
+          lineHeight: 1.05,
+
           letterSpacing: "-1px",
+
+          textTransform: "uppercase",
         }}
       >
         {title}
       </h2>
 
+
+      {/* =====================================================
+          DIVIDER
+      ===================================================== */}
+
+      <div
+        style={{
+          width: "100%",
+
+          height: "1px",
+
+          background:
+            "rgba(255,255,255,0.1)",
+
+          marginBottom: "18px",
+        }}
+      />
+
+
+      {/* =====================================================
+          DESCRIPTION
+      ===================================================== */}
+
       <p
         style={{
           margin: 0,
+
           fontSize: "13px",
-          lineHeight: 1.7,
-          opacity: 0.7,
+
+          lineHeight: 1.75,
+
+          color: "rgba(255,255,255,0.72)",
         }}
       >
         {description}
       </p>
 
-      <button
-        onClick={onClose}
+
+      {/* =====================================================
+          INSPECTION STATUS
+      ===================================================== */}
+
+      <div
         style={{
-          marginTop: "22px",
-          padding: "10px 18px",
-          background: "transparent",
-          border: "1px solid #555",
-          color: "white",
-          cursor: "pointer",
-          fontSize: "10px",
-          letterSpacing: "2px",
+          display: "flex",
+
+          alignItems: "center",
+
+          gap: "8px",
+
+          marginTop: "24px",
+
+          paddingTop: "16px",
+
+          borderTop:
+            "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        CLOSE
+
+        <span
+          style={{
+            width: "6px",
+
+            height: "6px",
+
+            borderRadius: "50%",
+
+            background: "white",
+
+            boxShadow:
+              "0 0 8px rgba(255,255,255,0.8)",
+          }}
+        />
+
+        <span
+          style={{
+            fontSize: "9px",
+
+            letterSpacing: "2px",
+
+            opacity: 0.45,
+          }}
+        >
+          COMPONENT INSPECTION
+        </span>
+
+      </div>
+
+
+      {/* =====================================================
+          CLOSE BUTTON
+      ===================================================== */}
+
+      <button
+        onClick={onClose}
+
+        style={{
+          marginTop: "22px",
+
+          width: "100%",
+
+          padding: "12px 18px",
+
+          background:
+            "rgba(255,255,255,0.04)",
+
+          border:
+            "1px solid rgba(255,255,255,0.2)",
+
+          color: "white",
+
+          cursor: "pointer",
+
+          fontSize: "9px",
+
+          letterSpacing: "3px",
+
+          transition:
+            "background 0.2s ease, border-color 0.2s ease",
+        }}
+
+        onMouseEnter={(event) => {
+          event.currentTarget.style.background =
+            "rgba(255,255,255,0.1)";
+
+          event.currentTarget.style.borderColor =
+            "rgba(255,255,255,0.4)";
+        }}
+
+        onMouseLeave={(event) => {
+          event.currentTarget.style.background =
+            "rgba(255,255,255,0.04)";
+
+          event.currentTarget.style.borderColor =
+            "rgba(255,255,255,0.2)";
+        }}
+      >
+        CLOSE INSPECTION
       </button>
+
+
+      {/* =====================================================
+          PANEL ANIMATION
+      ===================================================== */}
+
+      <style>
+        {`
+          @keyframes vehiclePanelEnter {
+            from {
+              opacity: 0;
+              transform: translateY(18px);
+            }
+
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
+
     </div>
   );
 }
