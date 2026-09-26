@@ -22,329 +22,81 @@ interface InspectionTarget {
 
 type ViewSection = "front" | "side" | "rear";
 
-type ComponentSystem =
-  | "exterior"
-  | "lighting"
-  | "wheels"
-  | "glass"
-  | "interior"
-  | "powertrain";
-
-interface ComponentSystemInfo {
-  id: ComponentSystem;
-  name: string;
-  code: string;
-  count: string;
-}
-
 interface ComponentPart {
   id: string;
   name: string;
   code: string;
   description: string;
-  modelPath: string;
+  modelPath?: string;
   modelScale?: number;
   modelPosition?: [number, number, number];
   cameraDistance?: number;
+  available: boolean;
 }
 
 /* =========================================================
-   COMPONENT SYSTEMS
+   COMPONENT 3D VIEW DATA
 ========================================================= */
 
-const COMPONENT_SYSTEMS: ComponentSystemInfo[] = [
+const COMPONENT_PARTS: ComponentPart[] = [
   {
-    id: "exterior",
-    name: "EXTERIOR",
-    code: "EXT",
-    count: "07",
+    id: "wheel",
+    name: "WHEEL",
+    code: "CMP-01",
+    description:
+      "Detailed 3D inspection of the performance wheel assembly.",
+    modelPath: "/models/inspection/wheels.glb",
+    modelScale: 0.62,
+    modelPosition: [0, 0.15, 0],
+    cameraDistance: 4.8,
+    available: true,
   },
+
   {
-    id: "lighting",
-    name: "LIGHTING",
-    code: "LGT",
-    count: "03",
+    id: "brake",
+    name: "BRAKE SYSTEM",
+    code: "CMP-02",
+    description:
+      "High-performance braking hardware. Dedicated inspection model pending.",
+    available: false,
   },
+
   {
-    id: "wheels",
-    name: "WHEELS & BRAKES",
-    code: "WHL",
-    count: "04",
+    id: "caliper",
+    name: "BRAKE CALIPER",
+    code: "CMP-03",
+    description:
+      "Performance brake caliper assembly. Dedicated inspection model pending.",
+    available: false,
   },
+
   {
-    id: "glass",
-    name: "GLASS",
-    code: "GLS",
-    count: "03",
+    id: "disc",
+    name: "BRAKE DISC",
+    code: "CMP-04",
+    description:
+      "Carbon-ceramic braking disc assembly. Dedicated inspection model pending.",
+    available: false,
   },
+
   {
-    id: "interior",
-    name: "INTERIOR",
-    code: "INT",
-    count: "05",
+    id: "engine",
+    name: "V12 ENGINE",
+    code: "CMP-05",
+    description:
+      "6.5-litre naturally aspirated V12 power unit. Dedicated inspection model pending.",
+    available: false,
   },
+
   {
-    id: "powertrain",
-    name: "POWERTRAIN",
-    code: "PWR",
-    count: "05",
+    id: "suspension",
+    name: "SUSPENSION",
+    code: "CMP-06",
+    description:
+      "Performance suspension architecture. Dedicated inspection model pending.",
+    available: false,
   },
 ];
-
-/* =========================================================
-   COMPONENT PARTS
-========================================================= */
-
-const COMPONENT_PARTS: Record<
-  ComponentSystem,
-  ComponentPart[]
-> = {
-  exterior: [
-    {
-      id: "front-bumper",
-      name: "FRONT BUMPER",
-      code: "EXT-01",
-      description:
-        "Front aerodynamic bodywork and structural exterior surface.",
-      modelPath: "/models/inspection/front-bumper.glb",
-    },
-    {
-      id: "hood",
-      name: "HOOD",
-      code: "EXT-02",
-      description:
-        "Sculpted front body panel forming the upper front profile.",
-      modelPath: "/models/inspection/hood.glb",
-    },
-    {
-      id: "left-door",
-      name: "LEFT DOOR",
-      code: "EXT-03",
-      description:
-        "Driver-side door assembly and exterior body surface.",
-      modelPath: "/models/inspection/left-door.glb",
-    },
-    {
-      id: "right-door",
-      name: "RIGHT DOOR",
-      code: "EXT-04",
-      description:
-        "Passenger-side door assembly and exterior body surface.",
-      modelPath: "/models/inspection/right-door.glb",
-    },
-    {
-      id: "side-panels",
-      name: "SIDE PANELS",
-      code: "EXT-05",
-      description:
-        "Sculpted side bodywork shaping the vehicle's aerodynamic profile.",
-      modelPath: "/models/inspection/side-panels.glb",
-    },
-    {
-      id: "rear-bumper",
-      name: "REAR BUMPER",
-      code: "EXT-06",
-      description:
-        "Rear exterior bodywork surrounding the diffuser and exhaust region.",
-      modelPath: "/models/inspection/rear-bumper.glb",
-    },
-    {
-      id: "rear-diffuser",
-      name: "REAR DIFFUSER",
-      code: "EXT-07",
-      description:
-        "Rear aerodynamic component managing airflow beneath the vehicle.",
-      modelPath: "/models/inspection/rear-diffuser.glb",
-    },
-  ],
-
-  lighting: [
-    {
-      id: "headlights",
-      name: "HEADLIGHTS",
-      code: "LGT-01",
-      description:
-        "Front LED lighting assembly forming the vehicle's signature lighting design.",
-      modelPath: "/models/inspection/headlights.glb",
-    },
-    {
-      id: "front-indicators",
-      name: "FRONT INDICATORS",
-      code: "LGT-02",
-      description:
-        "Front directional lighting elements integrated into the exterior lighting system.",
-      modelPath: "/models/inspection/front-indicators.glb",
-    },
-    {
-      id: "rear-lights",
-      name: "REAR LIGHTS",
-      code: "LGT-03",
-      description:
-        "Rear lighting assembly integrated into the angular rear design.",
-      modelPath: "/models/inspection/rear-lights.glb",
-    },
-  ],
-
-  wheels: [
-    {
-      id: "front-wheels",
-      name: "FRONT WHEEL",
-      code: "WHL-01",
-      description:
-        "Front wheel and tire assembly for the vehicle's performance-oriented chassis.",
-      modelPath: "/models/inspection/wheels.glb",
-      modelScale: 0.62,
-      modelPosition: [0, 0.15, 0],
-      cameraDistance: 4.8,
-    },
-    {
-      id: "rear-wheels",
-      name: "REAR WHEEL",
-      code: "WHL-02",
-      description:
-        "Rear wheel and tire assembly emphasizing the vehicle's wide performance stance.",
-      modelPath: "/models/inspection/wheels.glb",
-      modelScale: 0.62,
-      modelPosition: [0, 0.15, 0],
-      cameraDistance: 4.8,
-    },
-    {
-      id: "front-brakes",
-      name: "FRONT BRAKES",
-      code: "WHL-03",
-      description:
-        "High-performance front braking hardware located behind the wheel assembly.",
-      modelPath: "/models/inspection/wheels.glb",
-      modelScale: 0.55,
-      modelPosition: [0, 0.15, 0],
-      cameraDistance: 5.2,
-    },
-    {
-      id: "rear-brakes",
-      name: "REAR BRAKES",
-      code: "WHL-04",
-      description:
-        "Rear braking hardware designed for repeated high-performance deceleration.",
-      modelPath: "/models/inspection/wheels.glb",
-      modelScale: 0.55,
-      modelPosition: [0, 0.15, 0],
-      cameraDistance: 5.2,
-    },
-  ],
-
-  glass: [
-    {
-      id: "windshield",
-      name: "WINDSHIELD",
-      code: "GLS-01",
-      description:
-        "Front transparent body element forming the main forward visibility area.",
-      modelPath: "/models/inspection/windshield.glb",
-    },
-    {
-      id: "side-glass",
-      name: "SIDE GLASS",
-      code: "GLS-02",
-      description:
-        "Side glazing integrated into the vehicle's aerodynamic profile.",
-      modelPath: "/models/inspection/side-glass.glb",
-    },
-    {
-      id: "rear-glass",
-      name: "REAR GLASS",
-      code: "GLS-03",
-      description:
-        "Rear glazing integrated into the engine and rear body architecture.",
-      modelPath: "/models/inspection/rear-glass.glb",
-    },
-  ],
-
-  interior: [
-    {
-      id: "driver-seat",
-      name: "DRIVER SEAT",
-      code: "INT-01",
-      description:
-        "Driver seating assembly positioned within the cockpit.",
-      modelPath: "/models/inspection/driver-seat.glb",
-    },
-    {
-      id: "passenger-seat",
-      name: "PASSENGER SEAT",
-      code: "INT-02",
-      description:
-        "Passenger seating assembly integrated into the cabin.",
-      modelPath: "/models/inspection/passenger-seat.glb",
-    },
-    {
-      id: "dashboard",
-      name: "DASHBOARD",
-      code: "INT-03",
-      description:
-        "Main cockpit dashboard and instrument architecture.",
-      modelPath: "/models/inspection/dashboard.glb",
-    },
-    {
-      id: "steering-wheel",
-      name: "STEERING WHEEL",
-      code: "INT-04",
-      description:
-        "Driver control interface positioned at the center of the cockpit.",
-      modelPath: "/models/inspection/steering-wheel.glb",
-    },
-    {
-      id: "center-console",
-      name: "CENTER CONSOLE",
-      code: "INT-05",
-      description:
-        "Central interior control and storage structure.",
-      modelPath: "/models/inspection/center-console.glb",
-    },
-  ],
-
-  powertrain: [
-    {
-      id: "v12-engine",
-      name: "V12 ENGINE",
-      code: "PWR-01",
-      description:
-        "6.5-litre naturally aspirated V12 combustion engine.",
-      modelPath: "/models/inspection/v12-engine.glb",
-    },
-    {
-      id: "hybrid-motor",
-      name: "HYBRID MOTOR",
-      code: "PWR-02",
-      description:
-        "Electric motor component forming part of the hybrid powertrain.",
-      modelPath: "/models/inspection/hybrid-motor.glb",
-    },
-    {
-      id: "battery",
-      name: "BATTERY",
-      code: "PWR-03",
-      description:
-        "Lithium-ion battery system used by the hybrid powertrain.",
-      modelPath: "/models/inspection/battery.glb",
-    },
-    {
-      id: "exhaust",
-      name: "EXHAUST",
-      code: "PWR-04",
-      description:
-        "Performance exhaust hardware integrated into the rear powertrain architecture.",
-      modelPath: "/models/inspection/exhaust.glb",
-    },
-    {
-      id: "transmission",
-      name: "TRANSMISSION",
-      code: "PWR-05",
-      description:
-        "Eight-speed dual-clutch transmission system.",
-      modelPath: "/models/inspection/transmission.glb",
-    },
-  ],
-};
 
 /* =========================================================
    VIEW CAMERA POSITIONS
@@ -573,14 +325,11 @@ function RevueltoShowroom({
     useState(false);
 
   /* =====================================================
-     COMPONENT INSPECTION STATE
+     COMPONENT 3D VIEW STATE
   ===================================================== */
 
   const [showComponents, setShowComponents] =
     useState(false);
-
-  const [selectedSystem, setSelectedSystem] =
-    useState<ComponentSystem | null>(null);
 
   const [selectedPart, setSelectedPart] =
     useState<ComponentPart | null>(null);
@@ -607,9 +356,10 @@ function RevueltoShowroom({
     setShowSpecifications(false);
     setInspectionTarget(null);
     setSelectedDetail(null);
-    setShowComponents(true);
-    setSelectedSystem(null);
+    setSection(null);
     setSelectedPart(null);
+
+    setShowComponents(true);
   }
 
   /* =====================================================
@@ -617,9 +367,8 @@ function RevueltoShowroom({
   ===================================================== */
 
   function closeComponents() {
-    setSelectedPart(null);
-    setSelectedSystem(null);
     setShowComponents(false);
+    setSelectedPart(null);
 
     setResetToken(
       (previous) => previous + 1
@@ -627,34 +376,21 @@ function RevueltoShowroom({
   }
 
   /* =====================================================
-     SELECT SYSTEM
+     SELECT COMPONENT
   ===================================================== */
 
-  function selectSystem(
-    system: ComponentSystem
+  function selectComponent(
+    component: ComponentPart
   ) {
-    setSelectedSystem(system);
-    setSelectedPart(null);
+    if (!component.available) {
+      return;
+    }
+
+    setSelectedPart(component);
   }
 
   /* =====================================================
-     SELECT PART
-  ===================================================== */
-
-  function selectPart(part: ComponentPart) {
-    setSelectedPart(part);
-  }
-
-  /* =====================================================
-     BACK TO SYSTEMS
-  ===================================================== */
-
-  function backToSystems() {
-    setSelectedPart(null);
-  }
-
-  /* =====================================================
-     INSPECT
+     INSPECT VEHICLE HOTSPOT
   ===================================================== */
 
   function inspect(
@@ -677,7 +413,7 @@ function RevueltoShowroom({
   }
 
   /* =====================================================
-     CHANGE VIEW
+     CHANGE VEHICLE VIEW
   ===================================================== */
 
   function changeSection(
@@ -685,7 +421,6 @@ function RevueltoShowroom({
   ) {
     setShowSpecifications(false);
     setShowComponents(false);
-    setSelectedSystem(null);
     setSelectedPart(null);
 
     setSection(newSection);
@@ -694,7 +429,7 @@ function RevueltoShowroom({
   }
 
   /* =====================================================
-     CLOSE INSPECTION
+     CLOSE HOTSPOT INSPECTION
   ===================================================== */
 
   function closeInspection() {
@@ -712,7 +447,6 @@ function RevueltoShowroom({
     );
 
     setShowComponents(false);
-    setSelectedSystem(null);
     setSelectedPart(null);
 
     setInspectionTarget(null);
@@ -726,8 +460,6 @@ function RevueltoShowroom({
   function returnToExplore() {
     setShowSpecifications(false);
     setShowComponents(false);
-
-    setSelectedSystem(null);
     setSelectedPart(null);
 
     setSection(null);
@@ -740,7 +472,7 @@ function RevueltoShowroom({
   }
 
   /* =====================================================
-     COMPONENT INSPECTION SCREEN
+     COMPONENT 3D INSPECTION SCREEN
   ===================================================== */
 
   if (selectedPart) {
@@ -755,15 +487,21 @@ function RevueltoShowroom({
         }}
       >
         <PartInspectionViewer
-          modelPath={selectedPart.modelPath}
-          modelScale={selectedPart.modelScale}
-          modelPosition={selectedPart.modelPosition}
-          cameraDistance={
-            selectedPart.cameraDistance
+          modelPath={
+            selectedPart.modelPath!
           }
+          modelScale={
+            selectedPart.modelScale
+          }
+          modelPosition={
+            selectedPart.modelPosition
+          }
+          
         />
 
-        {/* TOP LEFT NAVIGATION */}
+        {/* =================================================
+            TOP LEFT NAVIGATION
+        ================================================= */}
 
         <div
           style={{
@@ -777,7 +515,9 @@ function RevueltoShowroom({
           }}
         >
           <button
-            onClick={backToSystems}
+            onClick={() =>
+              setSelectedPart(null)
+            }
             style={{
               height: 38,
               padding: "0 17px",
@@ -793,7 +533,7 @@ function RevueltoShowroom({
               backdropFilter: "blur(14px)",
             }}
           >
-            ← ALL SYSTEMS
+            ← COMPONENTS
           </button>
 
           <button
@@ -816,7 +556,9 @@ function RevueltoShowroom({
           </button>
         </div>
 
-        {/* PART INFORMATION */}
+        {/* =================================================
+            PART INFORMATION
+        ================================================= */}
 
         <div
           style={{
@@ -870,7 +612,9 @@ function RevueltoShowroom({
           </div>
         </div>
 
-        {/* TOP RIGHT BRAND */}
+        {/* =================================================
+            TOP RIGHT BRAND
+        ================================================= */}
 
         <div
           style={{
@@ -908,6 +652,276 @@ function RevueltoShowroom({
       </div>
     );
   }
+
+  /* =====================================================
+     STANDALONE COMPONENTS 3D VIEW
+  ===================================================== */
+
+  if (showComponents) {
+    return (
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          position: "relative",
+          overflow: "hidden",
+          background: "#030303",
+          color: "white",
+          fontFamily:
+            "Arial, Helvetica, sans-serif",
+        }}
+      >
+        {/* =================================================
+            BACKGROUND GRID
+        ================================================= */}
+
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            backgroundImage: `
+              linear-gradient(
+                rgba(255,255,255,0.025) 1px,
+                transparent 1px
+              ),
+              linear-gradient(
+                90deg,
+                rgba(255,255,255,0.025) 1px,
+                transparent 1px
+              )
+            `,
+            backgroundSize: "70px 70px",
+            maskImage:
+              "linear-gradient(to bottom, black, transparent 85%)",
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black, transparent 85%)",
+          }}
+        />
+
+        {/* =================================================
+            TOP LEFT BRAND
+        ================================================= */}
+
+        <div
+          style={{
+            position: "absolute",
+            top: 28,
+            left: 30,
+            zIndex: 10,
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: 8,
+              letterSpacing: "4px",
+              color:
+                "rgba(255,255,255,0.4)",
+            }}
+          >
+            LAMBORGHINI
+          </p>
+
+          <h1
+            style={{
+              margin: "7px 0 4px",
+              fontSize: 22,
+              fontWeight: 300,
+              letterSpacing: "5px",
+              color: "white",
+            }}
+          >
+            REVUELTO
+          </h1>
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: 7,
+              letterSpacing: "2.5px",
+              color:
+                "rgba(255,255,255,0.32)",
+            }}
+          >
+            COMPONENT ARCHITECTURE
+          </p>
+        </div>
+
+        {/* =================================================
+            BACK TO SHOWROOM
+        ================================================= */}
+
+        <button
+          onClick={closeComponents}
+          style={{
+            position: "absolute",
+            top: 28,
+            right: 30,
+            zIndex: 10,
+            padding: "10px 15px",
+            border:
+              "1px solid rgba(255,255,255,0.15)",
+            background:
+              "rgba(5,5,5,0.72)",
+            color:
+              "rgba(255,255,255,0.72)",
+            cursor: "pointer",
+            fontSize: 8,
+            letterSpacing: "2px",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          ← SHOWROOM
+        </button>
+
+        {/* =================================================
+            MAIN CONTENT
+        ================================================= */}
+
+        <div
+          style={{
+            position: "relative",
+            zIndex: 5,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding:
+              "110px 30px 70px",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* =================================================
+              HEADER
+          ================================================= */}
+
+          <div
+            style={{
+              textAlign: "center",
+              marginBottom: 52,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 8,
+                letterSpacing: "4px",
+                color:
+                  "rgba(255,255,255,0.34)",
+                marginBottom: 13,
+              }}
+            >
+              INTERACTIVE 3D INSPECTION
+            </div>
+
+            <h2
+              style={{
+                margin: 0,
+                fontSize:
+                  "clamp(34px, 5vw, 62px)",
+                fontWeight: 300,
+                letterSpacing: "10px",
+                lineHeight: 1,
+              }}
+            >
+              COMPONENTS
+            </h2>
+
+            <p
+              style={{
+                margin:
+                  "18px auto 0",
+                maxWidth: 480,
+                fontSize: 9,
+                lineHeight: 1.8,
+                letterSpacing: "1px",
+                color:
+                  "rgba(255,255,255,0.38)",
+              }}
+            >
+              SELECT A COMPONENT TO ENTER
+              ITS DEDICATED 3D INSPECTION
+              ENVIRONMENT.
+            </p>
+          </div>
+
+          {/* =================================================
+              COMPONENT GRID
+          ================================================= */}
+
+          <div
+            style={{
+              width:
+                "min(1000px, 94vw)",
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(3, minmax(0, 1fr))",
+              gap: 10,
+            }}
+          >
+            {COMPONENT_PARTS.map(
+              (component) => (
+                <ComponentCard
+                  key={component.id}
+                  component={component}
+                  onClick={() =>
+                    selectComponent(
+                      component
+                    )
+                  }
+                />
+              )
+            )}
+          </div>
+
+          {/* =================================================
+              FOOTER STATUS
+          ================================================= */}
+
+          <div
+            style={{
+              marginTop: 35,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              fontSize: 7,
+              letterSpacing: "2.5px",
+              color:
+                "rgba(255,255,255,0.27)",
+            }}
+          >
+            <span
+              style={{
+                width: 5,
+                height: 5,
+                borderRadius: "50%",
+                background: "white",
+                opacity: 0.8,
+              }}
+            />
+
+            ACTIVE 3D MODELS
+            <span
+              style={{
+                margin:
+                  "0 5px",
+                opacity: 0.3,
+              }}
+            >
+              /
+            </span>
+            01
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* =====================================================
+     MAIN SHOWROOM
+  ===================================================== */
 
   return (
     <div
@@ -1167,7 +1181,7 @@ function RevueltoShowroom({
 
         <NavButton
           label="COMPONENTS"
-          active={showComponents}
+          active={false}
           onClick={openComponents}
         />
       </div>
@@ -1507,382 +1521,11 @@ function RevueltoShowroom({
       </div>
 
       {/* =================================================
-          COMPONENT SYSTEM SELECTOR
-      ================================================= */}
-
-      {showComponents && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 50,
-            background:
-              "rgba(3,3,3,0.72)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter:
-              "blur(16px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 30,
-          }}
-        >
-          <div
-            style={{
-              width: "min(980px, 92vw)",
-              maxHeight: "82vh",
-              overflowY: "auto",
-              background: "#070707",
-              border:
-                "1px solid rgba(255,255,255,0.13)",
-              boxShadow:
-                "0 30px 100px rgba(0,0,0,0.65)",
-            }}
-          >
-            {/* PANEL HEADER */}
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                alignItems: "flex-start",
-                padding:
-                  "28px 30px 24px",
-                borderBottom:
-                  "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div>
-                <div
-                  style={{
-                    fontSize: 8,
-                    letterSpacing: "3px",
-                    color:
-                      "rgba(255,255,255,0.35)",
-                    marginBottom: 8,
-                  }}
-                >
-                  VEHICLE ARCHITECTURE
-                </div>
-
-                <h2
-                  style={{
-                    margin: 0,
-                    fontSize: 25,
-                    fontWeight: 300,
-                    letterSpacing: "5px",
-                    color: "white",
-                  }}
-                >
-                  COMPONENTS
-                </h2>
-              </div>
-
-              <button
-                onClick={closeComponents}
-                style={{
-                  width: 34,
-                  height: 34,
-                  border:
-                    "1px solid rgba(255,255,255,0.15)",
-                  background:
-                    "rgba(255,255,255,0.04)",
-                  color: "white",
-                  cursor: "pointer",
-                  fontSize: 17,
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* SYSTEM GRID */}
-
-            <div
-              style={{
-                padding: 30,
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 10,
-              }}
-            >
-              {COMPONENT_SYSTEMS.map(
-                (system) => {
-                  const active =
-                    selectedSystem ===
-                    system.id;
-
-                  return (
-                    <button
-                      key={system.id}
-                      onClick={() =>
-                        selectSystem(
-                          system.id
-                        )
-                      }
-                      style={{
-                        position:
-                          "relative",
-                        minHeight: 112,
-                        padding:
-                          "20px 22px",
-                        textAlign: "left",
-                        border:
-                          active
-                            ? "1px solid rgba(255,255,255,0.52)"
-                            : "1px solid rgba(255,255,255,0.10)",
-                        background:
-                          active
-                            ? "rgba(255,255,255,0.08)"
-                            : "rgba(255,255,255,0.025)",
-                        color: "white",
-                        cursor:
-                          "pointer",
-                        transition:
-                          "all 0.25s ease",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display:
-                            "flex",
-                          justifyContent:
-                            "space-between",
-                          alignItems:
-                            "flex-start",
-                          marginBottom:
-                            20,
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 8,
-                            letterSpacing:
-                              "2px",
-                            color:
-                              "rgba(255,255,255,0.35)",
-                          }}
-                        >
-                          {system.code}
-                        </span>
-
-                        <span
-                          style={{
-                            fontSize: 8,
-                            letterSpacing:
-                              "2px",
-                            color:
-                              "rgba(255,255,255,0.28)",
-                          }}
-                        >
-                          {system.count}
-                        </span>
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: 13,
-                          letterSpacing:
-                            "2.5px",
-                          fontWeight: 400,
-                        }}
-                      >
-                        {system.name}
-                      </div>
-
-                      <div
-                        style={{
-                          position:
-                            "absolute",
-                          bottom: 0,
-                          left: 0,
-                          height: 1,
-                          width:
-                            active
-                              ? "100%"
-                              : "0%",
-                          background:
-                            "white",
-                          transition:
-                            "width 0.3s ease",
-                        }}
-                      />
-                    </button>
-                  );
-                }
-              )}
-            </div>
-
-            {/* PART LIST */}
-
-            {selectedSystem && (
-              <div
-                style={{
-                  borderTop:
-                    "1px solid rgba(255,255,255,0.08)",
-                  padding: 30,
-                }}
-              >
-                <div
-                  style={{
-                    display:
-                      "flex",
-                    justifyContent:
-                      "space-between",
-                    alignItems:
-                      "center",
-                    marginBottom:
-                      18,
-                  }}
-                >
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 8,
-                        letterSpacing:
-                          "2.5px",
-                        color:
-                          "rgba(255,255,255,0.32)",
-                        marginBottom:
-                          6,
-                      }}
-                    >
-                      SELECT COMPONENT
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: 15,
-                        letterSpacing:
-                          "3px",
-                        color:
-                          "rgba(255,255,255,0.9)",
-                      }}
-                    >
-                      {
-                        COMPONENT_SYSTEMS.find(
-                          (item) =>
-                            item.id ===
-                            selectedSystem
-                        )?.name
-                      }
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() =>
-                      setSelectedSystem(
-                        null
-                      )
-                    }
-                    style={{
-                      border: "none",
-                      background:
-                        "transparent",
-                      color:
-                        "rgba(255,255,255,0.4)",
-                      cursor:
-                        "pointer",
-                      fontSize: 8,
-                      letterSpacing:
-                        "2px",
-                    }}
-                  >
-                    ALL SYSTEMS
-                  </button>
-                </div>
-
-                <div
-                  style={{
-                    display:
-                      "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fit, minmax(210px, 1fr))",
-                    gap: 8,
-                  }}
-                >
-                  {COMPONENT_PARTS[
-                    selectedSystem
-                  ].map((part) => (
-                    <button
-                      key={part.id}
-                      onClick={() =>
-                        selectPart(
-                          part
-                        )
-                      }
-                      style={{
-                        minHeight: 88,
-                        padding:
-                          "17px 18px",
-                        textAlign:
-                          "left",
-                        border:
-                          "1px solid rgba(255,255,255,0.09)",
-                        background:
-                          "rgba(255,255,255,0.025)",
-                        color: "white",
-                        cursor:
-                          "pointer",
-                        transition:
-                          "all 0.22s ease",
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: 7,
-                          letterSpacing:
-                            "2px",
-                          color:
-                            "rgba(255,255,255,0.3)",
-                          marginBottom:
-                            9,
-                        }}
-                      >
-                        {part.code}
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: 11,
-                          letterSpacing:
-                            "2px",
-                          marginBottom:
-                            7,
-                        }}
-                      >
-                        {part.name}
-                      </div>
-
-                      <div
-                        style={{
-                          fontSize: 8,
-                          lineHeight:
-                            1.5,
-                          color:
-                            "rgba(255,255,255,0.35)",
-                        }}
-                      >
-                        {part.description}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* =================================================
           INFORMATION PANEL
       ================================================= */}
 
       {selectedDetail &&
-        !showSpecifications &&
-        !showComponents && (
+        !showSpecifications && (
           <VehicleInfoPanel
             title={
               selectedDetail.title
@@ -2079,9 +1722,181 @@ function RevueltoShowroom({
               transform: translateX(0);
             }
           }
+
+          @media (max-width: 800px) {
+            .project-k-component-grid {
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+          }
+
+          @media (max-width: 520px) {
+            .project-k-component-grid {
+              grid-template-columns: 1fr;
+            }
+          }
         `}
       </style>
     </div>
+  );
+}
+
+/* =========================================================
+   COMPONENT CARD
+========================================================= */
+
+interface ComponentCardProps {
+  component: ComponentPart;
+  onClick: () => void;
+}
+
+function ComponentCard({
+  component,
+  onClick,
+}: ComponentCardProps) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={!component.available}
+      style={{
+        position: "relative",
+        minHeight: 150,
+        padding: "22px 23px",
+        textAlign: "left",
+        border:
+          component.available
+            ? "1px solid rgba(255,255,255,0.18)"
+            : "1px solid rgba(255,255,255,0.07)",
+        background:
+          component.available
+            ? "rgba(255,255,255,0.045)"
+            : "rgba(255,255,255,0.018)",
+        color: "white",
+        cursor:
+          component.available
+            ? "pointer"
+            : "not-allowed",
+        opacity:
+          component.available
+            ? 1
+            : 0.45,
+        transition:
+          "all 0.25s ease",
+        overflow: "hidden",
+      }}
+      onMouseEnter={(event) => {
+        if (!component.available) {
+          return;
+        }
+
+        event.currentTarget.style.background =
+          "rgba(255,255,255,0.085)";
+
+        event.currentTarget.style.borderColor =
+          "rgba(255,255,255,0.42)";
+
+        event.currentTarget.style.transform =
+          "translateY(-3px)";
+      }}
+      onMouseLeave={(event) => {
+        if (!component.available) {
+          return;
+        }
+
+        event.currentTarget.style.background =
+          "rgba(255,255,255,0.045)";
+
+        event.currentTarget.style.borderColor =
+          "rgba(255,255,255,0.18)";
+
+        event.currentTarget.style.transform =
+          "translateY(0)";
+      }}
+    >
+      {/* TOP ROW */}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent:
+            "space-between",
+          alignItems: "flex-start",
+          marginBottom: 28,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 7,
+            letterSpacing: "2.5px",
+            color:
+              "rgba(255,255,255,0.32)",
+          }}
+        >
+          {component.code}
+        </span>
+
+        <span
+          style={{
+            fontSize: 7,
+            letterSpacing: "2px",
+            color:
+              component.available
+                ? "rgba(255,255,255,0.75)"
+                : "rgba(255,255,255,0.25)",
+          }}
+        >
+          {component.available
+            ? "3D READY"
+            : "COMING SOON"}
+        </span>
+      </div>
+
+      {/* COMPONENT NAME */}
+
+      <div
+        style={{
+          fontSize: 13,
+          letterSpacing: "3px",
+          fontWeight: 400,
+          marginBottom: 12,
+        }}
+      >
+        {component.name}
+      </div>
+
+      {/* DESCRIPTION */}
+
+      <div
+        style={{
+          maxWidth: 270,
+          fontSize: 8,
+          lineHeight: 1.65,
+          letterSpacing: "0.5px",
+          color:
+            "rgba(255,255,255,0.36)",
+        }}
+      >
+        {component.description}
+      </div>
+
+      {/* BOTTOM INDICATOR */}
+
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          bottom: 0,
+          width:
+            component.available
+              ? "100%"
+              : "0%",
+          height: 1,
+          background:
+            "rgba(255,255,255,0.8)",
+          transition:
+            "width 0.3s ease",
+        }}
+      />
+    </button>
   );
 }
 
