@@ -344,18 +344,14 @@ function InspectionModel({
 function ExplodedLabels({
   isExploded,
   carWorldX,
+  activeLabel,
+  setActiveLabel,
 }: {
   isExploded: boolean;
   carWorldX: number;
+  activeLabel: string | null;
+  setActiveLabel: (id: string | null) => void;
 }) {
-  const [activeLabel, setActiveLabel] =
-    useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isExploded) {
-      setActiveLabel(null);
-    }
-  }, [isExploded]);
 
   if (!isExploded) return null;
 
@@ -674,6 +670,9 @@ export default function PartInspectionViewer({
   const [resetSignal, setResetSignal] =
     useState(0);
 
+  const [activeLabel, setActiveLabel] =
+    useState<string | null>(null);
+
   const controlsRef =
     useRef<OrbitControlsImpl>(null);
 
@@ -687,8 +686,58 @@ export default function PartInspectionViewer({
 
   const handleReset = () => {
     setIsExploded(false);
+    setActiveLabel(null);
     setResetSignal(
       (prev) => prev + 1
+    );
+  };
+
+  const handleExplodeToggle = () => {
+    setIsExploded((prev) => {
+      const next = !prev;
+
+      if (!next) {
+        setActiveLabel(null);
+      }
+
+      return next;
+    });
+  };
+
+  const handlePreviousLabel = () => {
+    if (!isExploded) return;
+
+    const currentIndex =
+      EXPLODED_LABELS.findIndex(
+        (label) => label.id === activeLabel
+      );
+
+    const previousIndex =
+      currentIndex <= 0
+        ? EXPLODED_LABELS.length - 1
+        : currentIndex - 1;
+
+    setActiveLabel(
+      EXPLODED_LABELS[previousIndex].id
+    );
+  };
+
+  const handleNextLabel = () => {
+    if (!isExploded) return;
+
+    const currentIndex =
+      EXPLODED_LABELS.findIndex(
+        (label) => label.id === activeLabel
+      );
+
+    const nextIndex =
+      currentIndex === -1 ||
+      currentIndex >= EXPLODED_LABELS.length - 1
+        ? 0
+        : currentIndex + 1;
+
+    setActiveLabel(
+      EXPLODED_LABELS[nextIndex].id
     );
   };
 
@@ -810,6 +859,8 @@ export default function PartInspectionViewer({
           carWorldX={
             modelPosition[0]
           }
+          activeLabel={activeLabel}
+          setActiveLabel={setActiveLabel}
         />
 
         {/* FLOOR */}
@@ -968,6 +1019,113 @@ export default function PartInspectionViewer({
         </div>
 
         {/* =================================================
+            COMPONENT NAVIGATION
+            ONLY VISIBLE DURING EXPLODED VIEW
+        ================================================= */}
+
+        {isExploded && (
+          <div
+            style={{
+              position: "absolute",
+              left: 28,
+              bottom: 22,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              pointerEvents: "auto",
+            }}
+          >
+            <button
+              onClick={handlePreviousLabel}
+              style={{
+                height: 42,
+                padding: "0 15px",
+                border:
+                  "1px solid rgba(255,255,255,0.22)",
+                background:
+                  "rgba(5,7,9,0.78)",
+                color:
+                  "rgba(255,255,255,0.72)",
+                cursor: "pointer",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                backdropFilter:
+                  "blur(10px)",
+                transition:
+                  "all 180ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor =
+                  "rgba(255,255,255,0.50)";
+
+                e.currentTarget.style.color =
+                  "#ffffff";
+
+                e.currentTarget.style.background =
+                  "rgba(255,255,255,0.10)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor =
+                  "rgba(255,255,255,0.22)";
+
+                e.currentTarget.style.color =
+                  "rgba(255,255,255,0.72)";
+
+                e.currentTarget.style.background =
+                  "rgba(5,7,9,0.78)";
+              }}
+            >
+              PREVIOUS
+            </button>
+
+            <button
+              onClick={handleNextLabel}
+              style={{
+                height: 42,
+                padding: "0 15px",
+                border:
+                  "1px solid rgba(255,255,255,0.22)",
+                background:
+                  "rgba(5,7,9,0.78)",
+                color:
+                  "rgba(255,255,255,0.72)",
+                cursor: "pointer",
+                fontSize: 10,
+                fontWeight: 600,
+                letterSpacing: "0.16em",
+                backdropFilter:
+                  "blur(10px)",
+                transition:
+                  "all 180ms ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor =
+                  "rgba(255,255,255,0.50)";
+
+                e.currentTarget.style.color =
+                  "#ffffff";
+
+                e.currentTarget.style.background =
+                  "rgba(255,255,255,0.10)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor =
+                  "rgba(255,255,255,0.22)";
+
+                e.currentTarget.style.color =
+                  "rgba(255,255,255,0.72)";
+
+                e.currentTarget.style.background =
+                  "rgba(5,7,9,0.78)";
+              }}
+            >
+              NEXT
+            </button>
+          </div>
+        )}
+
+        {/* =================================================
             3D ACTION BUTTONS
         ================================================= */}
 
@@ -985,11 +1143,7 @@ export default function PartInspectionViewer({
           {/* EXPLODE / ASSEMBLE */}
 
           <button
-            onClick={() =>
-              setIsExploded(
-                (prev) => !prev
-              )
-            }
+            onClick={handleExplodeToggle}
             style={{
               height: 42,
               padding: "0 18px",
