@@ -1027,8 +1027,9 @@ export default function PartInspectionViewer({
           <div
             style={{
               position: "absolute",
-              left: 28,
-              bottom: 22,
+              left: "50%",
+              bottom: 40,
+              transform: "translateX(-50%)",
               display: "flex",
               alignItems: "center",
               gap: 8,
