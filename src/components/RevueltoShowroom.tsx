@@ -1,10 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import {
   CameraControls,
   ContactShadows,
   Environment,
 } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+
+import {
+  Canvas,
+} from "@react-three/fiber";
 
 import RevueltoModel from "./RevueltoModel";
 import Hotspot from "./Hotspot";
@@ -16,11 +24,26 @@ import PartInspectionViewer from "./PartInspectionViewer";
 ========================================================= */
 
 interface InspectionTarget {
-  cameraPosition: [number, number, number];
-  target: [number, number, number];
+  cameraPosition: [
+    number,
+    number,
+    number
+  ];
+  target: [
+    number,
+    number,
+    number
+  ];
 }
 
-type ViewSection = "front" | "side" | "rear";
+type ViewSection =
+  | "front"
+  | "side"
+  | "rear";
+
+type DisplayMode =
+  | "normal"
+  | "technical";
 
 interface ComponentPart {
   id: string;
@@ -29,7 +52,11 @@ interface ComponentPart {
   description: string;
   modelPath?: string;
   modelScale?: number;
-  modelPosition?: [number, number, number];
+  modelPosition?: [
+    number,
+    number,
+    number
+  ];
   cameraDistance?: number;
   available: boolean;
 }
@@ -45,7 +72,8 @@ const COMPONENT_PARTS: ComponentPart[] = [
     code: "CMP-01",
     description:
       "Detailed 3D inspection of the performance wheel assembly.",
-    modelPath: "/models/inspection/wheels.glb",
+    modelPath:
+      "/models/inspection/wheels.glb",
     modelScale: 0.62,
     modelPosition: [0, 0.15, 0],
     cameraDistance: 4.8,
@@ -107,18 +135,42 @@ const VIEW_TARGETS: Record<
   InspectionTarget
 > = {
   front: {
-    cameraPosition: [-6, 2.3, 0],
-    target: [0, 0.55, 0],
+    cameraPosition: [
+      -6,
+      2.3,
+      0,
+    ],
+    target: [
+      0,
+      0.55,
+      0,
+    ],
   },
 
   side: {
-    cameraPosition: [0, 2.2, 6],
-    target: [0, 0.55, 0],
+    cameraPosition: [
+      0,
+      2.2,
+      6,
+    ],
+    target: [
+      0,
+      0.55,
+      0,
+    ],
   },
 
   rear: {
-    cameraPosition: [6, 2.3, 0],
-    target: [0, 0.55, 0],
+    cameraPosition: [
+      6,
+      2.3,
+      0,
+    ],
+    target: [
+      0,
+      0.55,
+      0,
+    ],
   },
 };
 
@@ -127,8 +179,16 @@ const VIEW_TARGETS: Record<
 ========================================================= */
 
 const HERO_CAMERA: InspectionTarget = {
-  cameraPosition: [6.5, 2.4, 5.2],
-  target: [0, 0.55, 0],
+  cameraPosition: [
+    6.5,
+    2.4,
+    5.2,
+  ],
+  target: [
+    0,
+    0.55,
+    0,
+  ],
 };
 
 /* =========================================================
@@ -147,10 +207,13 @@ function SmoothCameraController({
   resetToken,
 }: SmoothCameraControllerProps) {
   const controlsRef =
-    useRef<CameraControls | null>(null);
+    useRef<CameraControls | null>(
+      null
+    );
 
   useEffect(() => {
-    const controls = controlsRef.current;
+    const controls =
+      controlsRef.current;
 
     if (!controls) {
       return;
@@ -171,15 +234,23 @@ function SmoothCameraController({
       destination.target[2],
       true
     );
-  }, [target, section, resetToken]);
+  }, [
+    target,
+    section,
+    resetToken,
+  ]);
 
   return (
     <CameraControls
       ref={controlsRef}
       minDistance={3}
       maxDistance={12}
-      minPolarAngle={Math.PI / 4}
-      maxPolarAngle={Math.PI / 2.05}
+      minPolarAngle={
+        Math.PI / 4
+      }
+      maxPolarAngle={
+        Math.PI / 2.05
+      }
       smoothTime={0.8}
       dollyToCursor={false}
     />
@@ -210,7 +281,8 @@ const SPECIFICATIONS = {
     },
     {
       label: "HYBRID SYSTEM",
-      value: "V12 + 3 Electric Motors",
+      value:
+        "V12 + 3 Electric Motors",
     },
     {
       label: "BATTERY",
@@ -218,7 +290,8 @@ const SPECIFICATIONS = {
     },
     {
       label: "TRANSMISSION",
-      value: "8-speed Dual Clutch",
+      value:
+        "8-speed Dual Clutch",
     },
   ],
 
@@ -287,7 +360,8 @@ const SPECIFICATIONS = {
     },
     {
       label: "STEERING",
-      value: "Electric Power Steering",
+      value:
+        "Electric Power Steering",
     },
   ],
 };
@@ -303,45 +377,84 @@ interface RevueltoShowroomProps {
 function RevueltoShowroom({
   onBack,
 }: RevueltoShowroomProps) {
-  const [section, setSection] =
-    useState<ViewSection | null>(null);
+  const [
+    section,
+    setSection,
+  ] = useState<ViewSection | null>(
+    null
+  );
 
-  const [inspectionTarget, setInspectionTarget] =
-    useState<InspectionTarget | null>(null);
+  const [
+    inspectionTarget,
+    setInspectionTarget,
+  ] =
+    useState<InspectionTarget | null>(
+      null
+    );
 
-  const [selectedDetail, setSelectedDetail] =
-    useState<{
-      title: string;
-      description: string;
-    } | null>(null);
+  const [
+    selectedDetail,
+    setSelectedDetail,
+  ] = useState<{
+    title: string;
+    description: string;
+  } | null>(null);
 
-  const [resetToken, setResetToken] =
-    useState(0);
+  const [
+    resetToken,
+    setResetToken,
+  ] = useState(0);
 
-  const [showSpecifications, setShowSpecifications] =
-    useState(false);
+  const [
+    showSpecifications,
+    setShowSpecifications,
+  ] = useState(false);
 
-  const [introComplete, setIntroComplete] =
-    useState(false);
+  const [
+    introComplete,
+    setIntroComplete,
+  ] = useState(false);
+
+  /* =====================================================
+     TECHNICAL MODE
+  ===================================================== */
+
+  const [
+    displayMode,
+    setDisplayMode,
+  ] = useState<DisplayMode>(
+    "normal"
+  );
+
+  const technicalMode =
+    displayMode === "technical";
 
   /* =====================================================
      COMPONENT 3D VIEW STATE
   ===================================================== */
 
-  const [showComponents, setShowComponents] =
-    useState(false);
+  const [
+    showComponents,
+    setShowComponents,
+  ] = useState(false);
 
-  const [selectedPart, setSelectedPart] =
-    useState<ComponentPart | null>(null);
+  const [
+    selectedPart,
+    setSelectedPart,
+  ] =
+    useState<ComponentPart | null>(
+      null
+    );
 
   /* =====================================================
      INTRO
   ===================================================== */
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setIntroComplete(true);
-    }, 2200);
+    const timer =
+      window.setTimeout(() => {
+        setIntroComplete(true);
+      }, 2200);
 
     return () => {
       window.clearTimeout(timer);
@@ -359,6 +472,8 @@ function RevueltoShowroom({
     setSection(null);
     setSelectedPart(null);
 
+    setDisplayMode("normal");
+
     setShowComponents(true);
   }
 
@@ -371,7 +486,8 @@ function RevueltoShowroom({
     setSelectedPart(null);
 
     setResetToken(
-      (previous) => previous + 1
+      (previous) =>
+        previous + 1
     );
   }
 
@@ -394,8 +510,16 @@ function RevueltoShowroom({
   ===================================================== */
 
   function inspect(
-    cameraPosition: [number, number, number],
-    target: [number, number, number],
+    cameraPosition: [
+      number,
+      number,
+      number
+    ],
+    target: [
+      number,
+      number,
+      number
+    ],
     title: string,
     description: string
   ) {
@@ -451,6 +575,30 @@ function RevueltoShowroom({
 
     setInspectionTarget(null);
     setSelectedDetail(null);
+
+    setDisplayMode("normal");
+  }
+
+  /* =====================================================
+     TECHNICAL MODE
+  ===================================================== */
+
+  function toggleTechnicalMode() {
+    setDisplayMode(
+      (previous) =>
+        previous === "normal"
+          ? "technical"
+          : "normal"
+    );
+
+    /*
+     * Technical mode is a presentation layer.
+     * We keep the current camera/view untouched.
+     */
+
+    setShowSpecifications(false);
+    setInspectionTarget(null);
+    setSelectedDetail(null);
   }
 
   /* =====================================================
@@ -466,8 +614,11 @@ function RevueltoShowroom({
     setInspectionTarget(null);
     setSelectedDetail(null);
 
+    setDisplayMode("normal");
+
     setResetToken(
-      (previous) => previous + 1
+      (previous) =>
+        previous + 1
     );
   }
 
@@ -496,7 +647,6 @@ function RevueltoShowroom({
           modelPosition={
             selectedPart.modelPosition
           }
-          
         />
 
         {/* =================================================
@@ -520,7 +670,8 @@ function RevueltoShowroom({
             }
             style={{
               height: 38,
-              padding: "0 17px",
+              padding:
+                "0 17px",
               border:
                 "1px solid rgba(255,255,255,0.18)",
               background:
@@ -530,14 +681,17 @@ function RevueltoShowroom({
               fontSize: 9,
               letterSpacing: "2px",
               cursor: "pointer",
-              backdropFilter: "blur(14px)",
+              backdropFilter:
+                "blur(14px)",
             }}
           >
             ← COMPONENTS
           </button>
 
           <button
-            onClick={closeComponents}
+            onClick={
+              closeComponents
+            }
             style={{
               width: 38,
               height: 38,
@@ -548,7 +702,8 @@ function RevueltoShowroom({
               color: "white",
               fontSize: 17,
               cursor: "pointer",
-              backdropFilter: "blur(14px)",
+              backdropFilter:
+                "blur(14px)",
             }}
             aria-label="Close component inspection"
           >
@@ -567,18 +722,21 @@ function RevueltoShowroom({
             bottom: 32,
             zIndex: 100,
             maxWidth: 430,
-            padding: "22px 24px",
+            padding:
+              "22px 24px",
             background:
               "rgba(5,5,5,0.82)",
             border:
               "1px solid rgba(255,255,255,0.13)",
-            backdropFilter: "blur(18px)",
+            backdropFilter:
+              "blur(18px)",
           }}
         >
           <div
             style={{
               fontSize: 8,
-              letterSpacing: "3px",
+              letterSpacing:
+                "3px",
               color:
                 "rgba(255,255,255,0.38)",
               marginBottom: 9,
@@ -591,7 +749,8 @@ function RevueltoShowroom({
             style={{
               fontSize: 20,
               fontWeight: 300,
-              letterSpacing: "3px",
+              letterSpacing:
+                "3px",
               color: "white",
               marginBottom: 9,
             }}
@@ -603,7 +762,8 @@ function RevueltoShowroom({
             style={{
               fontSize: 10,
               lineHeight: 1.7,
-              letterSpacing: "0.4px",
+              letterSpacing:
+                "0.4px",
               color:
                 "rgba(255,255,255,0.48)",
             }}
@@ -623,13 +783,15 @@ function RevueltoShowroom({
             right: 30,
             zIndex: 100,
             textAlign: "right",
-            pointerEvents: "none",
+            pointerEvents:
+              "none",
           }}
         >
           <div
             style={{
               fontSize: 8,
-              letterSpacing: "4px",
+              letterSpacing:
+                "4px",
               color:
                 "rgba(255,255,255,0.4)",
               marginBottom: 6,
@@ -641,7 +803,8 @@ function RevueltoShowroom({
           <div
             style={{
               fontSize: 13,
-              letterSpacing: "4px",
+              letterSpacing:
+                "4px",
               color:
                 "rgba(255,255,255,0.88)",
             }}
@@ -677,9 +840,11 @@ function RevueltoShowroom({
 
         <div
           style={{
-            position: "absolute",
+            position:
+              "absolute",
             inset: 0,
-            pointerEvents: "none",
+            pointerEvents:
+              "none",
             backgroundImage: `
               linear-gradient(
                 rgba(255,255,255,0.025) 1px,
@@ -691,7 +856,8 @@ function RevueltoShowroom({
                 transparent 1px
               )
             `,
-            backgroundSize: "70px 70px",
+            backgroundSize:
+              "70px 70px",
             maskImage:
               "linear-gradient(to bottom, black, transparent 85%)",
             WebkitMaskImage:
@@ -705,7 +871,8 @@ function RevueltoShowroom({
 
         <div
           style={{
-            position: "absolute",
+            position:
+              "absolute",
             top: 28,
             left: 30,
             zIndex: 10,
@@ -715,7 +882,8 @@ function RevueltoShowroom({
             style={{
               margin: 0,
               fontSize: 8,
-              letterSpacing: "4px",
+              letterSpacing:
+                "4px",
               color:
                 "rgba(255,255,255,0.4)",
             }}
@@ -725,10 +893,12 @@ function RevueltoShowroom({
 
           <h1
             style={{
-              margin: "7px 0 4px",
+              margin:
+                "7px 0 4px",
               fontSize: 22,
               fontWeight: 300,
-              letterSpacing: "5px",
+              letterSpacing:
+                "5px",
               color: "white",
             }}
           >
@@ -739,7 +909,8 @@ function RevueltoShowroom({
             style={{
               margin: 0,
               fontSize: 7,
-              letterSpacing: "2.5px",
+              letterSpacing:
+                "2.5px",
               color:
                 "rgba(255,255,255,0.32)",
             }}
@@ -753,23 +924,30 @@ function RevueltoShowroom({
         ================================================= */}
 
         <button
-          onClick={closeComponents}
+          onClick={
+            closeComponents
+          }
           style={{
-            position: "absolute",
+            position:
+              "absolute",
             top: 28,
             right: 30,
             zIndex: 10,
-            padding: "10px 15px",
+            padding:
+              "10px 15px",
             border:
               "1px solid rgba(255,255,255,0.15)",
             background:
               "rgba(5,5,5,0.72)",
             color:
               "rgba(255,255,255,0.72)",
-            cursor: "pointer",
+            cursor:
+              "pointer",
             fontSize: 8,
-            letterSpacing: "2px",
-            backdropFilter: "blur(12px)",
+            letterSpacing:
+              "2px",
+            backdropFilter:
+              "blur(12px)",
           }}
         >
           ← SHOWROOM
@@ -781,17 +959,23 @@ function RevueltoShowroom({
 
         <div
           style={{
-            position: "relative",
+            position:
+              "relative",
             zIndex: 5,
             width: "100%",
             height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
+            display:
+              "flex",
+            flexDirection:
+              "column",
+            alignItems:
+              "center",
+            justifyContent:
+              "center",
             padding:
               "110px 30px 70px",
-            boxSizing: "border-box",
+            boxSizing:
+              "border-box",
           }}
         >
           {/* =================================================
@@ -800,17 +984,21 @@ function RevueltoShowroom({
 
           <div
             style={{
-              textAlign: "center",
-              marginBottom: 52,
+              textAlign:
+                "center",
+              marginBottom:
+                52,
             }}
           >
             <div
               style={{
                 fontSize: 8,
-                letterSpacing: "4px",
+                letterSpacing:
+                  "4px",
                 color:
                   "rgba(255,255,255,0.34)",
-                marginBottom: 13,
+                marginBottom:
+                  13,
               }}
             >
               INTERACTIVE 3D INSPECTION
@@ -822,7 +1010,8 @@ function RevueltoShowroom({
                 fontSize:
                   "clamp(34px, 5vw, 62px)",
                 fontWeight: 300,
-                letterSpacing: "10px",
+                letterSpacing:
+                  "10px",
                 lineHeight: 1,
               }}
             >
@@ -836,7 +1025,8 @@ function RevueltoShowroom({
                 maxWidth: 480,
                 fontSize: 9,
                 lineHeight: 1.8,
-                letterSpacing: "1px",
+                letterSpacing:
+                  "1px",
                 color:
                   "rgba(255,255,255,0.38)",
               }}
@@ -855,7 +1045,8 @@ function RevueltoShowroom({
             style={{
               width:
                 "min(1000px, 94vw)",
-              display: "grid",
+              display:
+                "grid",
               gridTemplateColumns:
                 "repeat(3, minmax(0, 1fr))",
               gap: 10,
@@ -865,7 +1056,9 @@ function RevueltoShowroom({
               (component) => (
                 <ComponentCard
                   key={component.id}
-                  component={component}
+                  component={
+                    component
+                  }
                   onClick={() =>
                     selectComponent(
                       component
@@ -883,11 +1076,14 @@ function RevueltoShowroom({
           <div
             style={{
               marginTop: 35,
-              display: "flex",
-              alignItems: "center",
+              display:
+                "flex",
+              alignItems:
+                "center",
               gap: 10,
               fontSize: 7,
-              letterSpacing: "2.5px",
+              letterSpacing:
+                "2.5px",
               color:
                 "rgba(255,255,255,0.27)",
             }}
@@ -896,13 +1092,16 @@ function RevueltoShowroom({
               style={{
                 width: 5,
                 height: 5,
-                borderRadius: "50%",
-                background: "white",
+                borderRadius:
+                  "50%",
+                background:
+                  "white",
                 opacity: 0.8,
               }}
             />
 
             ACTIVE 3D MODELS
+
             <span
               style={{
                 margin:
@@ -912,6 +1111,7 @@ function RevueltoShowroom({
             >
               /
             </span>
+
             01
           </div>
         </div>
@@ -929,9 +1129,12 @@ function RevueltoShowroom({
       style={{
         width: "100%",
         height: "100vh",
-        position: "relative",
-        overflow: "hidden",
-        background: "#030303",
+        position:
+          "relative",
+        overflow:
+          "hidden",
+        background:
+          "#030303",
       }}
     >
       {/* =================================================
@@ -943,22 +1146,35 @@ function RevueltoShowroom({
           position: "fixed",
           inset: 0,
           zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#030303",
+          display:
+            "flex",
+          flexDirection:
+            "column",
+          alignItems:
+            "center",
+          justifyContent:
+            "center",
+          background:
+            "#030303",
           color: "white",
-          opacity: introComplete ? 0 : 1,
+          opacity:
+            introComplete
+              ? 0
+              : 1,
           pointerEvents:
-            introComplete ? "none" : "auto",
-          transition: "opacity 1.2s ease",
-          overflow: "hidden",
+            introComplete
+              ? "none"
+              : "auto",
+          transition:
+            "opacity 1.2s ease",
+          overflow:
+            "hidden",
         }}
       >
         <div
           style={{
-            position: "absolute",
+            position:
+              "absolute",
             top: "50%",
             left: 0,
             width: "100%",
@@ -970,8 +1186,10 @@ function RevueltoShowroom({
 
         <div
           style={{
-            position: "absolute",
-            top: "calc(50% - 70px)",
+            position:
+              "absolute",
+            top:
+              "calc(50% - 70px)",
             left: 0,
             width: "100%",
             height: "1px",
@@ -986,7 +1204,8 @@ function RevueltoShowroom({
             fontFamily:
               "Arial, Helvetica, sans-serif",
             fontSize: 11,
-            letterSpacing: "7px",
+            letterSpacing:
+              "7px",
             fontWeight: 400,
             opacity: 0.65,
           }}
@@ -996,13 +1215,15 @@ function RevueltoShowroom({
 
         <h1
           style={{
-            margin: "16px 0 10px",
+            margin:
+              "16px 0 10px",
             fontFamily:
               "Arial, Helvetica, sans-serif",
             fontSize:
               "clamp(42px, 8vw, 96px)",
             fontWeight: 300,
-            letterSpacing: "12px",
+            letterSpacing:
+              "12px",
             lineHeight: 1,
           }}
         >
@@ -1015,7 +1236,8 @@ function RevueltoShowroom({
             fontFamily:
               "Arial, Helvetica, sans-serif",
             fontSize: 9,
-            letterSpacing: "4px",
+            letterSpacing:
+              "4px",
             color:
               "rgba(255,255,255,0.5)",
           }}
@@ -1030,21 +1252,29 @@ function RevueltoShowroom({
 
       <div
         style={{
-          position: "absolute",
+          position:
+            "absolute",
           zIndex: 20,
           top: 26,
           left: 30,
-          opacity: introComplete ? 1 : 0,
-          transition: "opacity 1.2s ease",
+          opacity:
+            introComplete
+              ? 1
+              : 0,
+          transition:
+            "opacity 1.2s ease",
           pointerEvents:
-            introComplete ? "auto" : "none",
+            introComplete
+              ? "auto"
+              : "none",
         }}
       >
         <p
           style={{
             margin: 0,
             fontSize: 8,
-            letterSpacing: "4px",
+            letterSpacing:
+              "4px",
             color:
               "rgba(255,255,255,0.4)",
           }}
@@ -1054,10 +1284,12 @@ function RevueltoShowroom({
 
         <h1
           style={{
-            margin: "7px 0 4px",
+            margin:
+              "7px 0 4px",
             fontSize: 22,
             fontWeight: 300,
-            letterSpacing: "5px",
+            letterSpacing:
+              "5px",
             color: "white",
           }}
         >
@@ -1068,7 +1300,8 @@ function RevueltoShowroom({
           style={{
             margin: 0,
             fontSize: 7,
-            letterSpacing: "2.5px",
+            letterSpacing:
+              "2.5px",
             color:
               "rgba(255,255,255,0.32)",
           }}
@@ -1085,25 +1318,36 @@ function RevueltoShowroom({
         className="showroom-back"
         onClick={onBack}
         style={{
-          position: "absolute",
+          position:
+            "absolute",
           top: 28,
           right: 30,
           zIndex: 30,
-          padding: "10px 15px",
+          padding:
+            "10px 15px",
           border:
             "1px solid rgba(255,255,255,0.15)",
           background:
             "rgba(5,5,5,0.5)",
           color:
             "rgba(255,255,255,0.7)",
-          cursor: "pointer",
+          cursor:
+            "pointer",
           fontSize: 8,
-          letterSpacing: "2px",
-          backdropFilter: "blur(12px)",
-          opacity: introComplete ? 1 : 0,
-          transition: "opacity 1.2s ease",
+          letterSpacing:
+            "2px",
+          backdropFilter:
+            "blur(12px)",
+          opacity:
+            introComplete
+              ? 1
+              : 0,
+          transition:
+            "opacity 1.2s ease",
           pointerEvents:
-            introComplete ? "auto" : "none",
+            introComplete
+              ? "auto"
+              : "none",
         }}
       >
         ← BACK
@@ -1115,50 +1359,74 @@ function RevueltoShowroom({
 
       <div
         style={{
-          position: "absolute",
+          position:
+            "absolute",
           zIndex: 25,
           left: "50%",
           top: 118,
-          transform: "translateX(-50%)",
-          display: "flex",
-          alignItems: "center",
+          transform:
+            "translateX(-50%)",
+          display:
+            "flex",
+          alignItems:
+            "center",
           gap: 3,
           padding: 5,
           background:
             "rgba(5,5,5,0.76)",
           border:
             "1px solid rgba(255,255,255,0.12)",
-          backdropFilter: "blur(18px)",
+          backdropFilter:
+            "blur(18px)",
           boxShadow:
             "0 12px 45px rgba(0,0,0,0.35)",
-          opacity: introComplete ? 1 : 0,
-          transition: "opacity 1.2s ease",
+          opacity:
+            introComplete
+              ? 1
+              : 0,
+          transition:
+            "opacity 1.2s ease",
           pointerEvents:
-            introComplete ? "auto" : "none",
-          whiteSpace: "nowrap",
+            introComplete
+              ? "auto"
+              : "none",
+          whiteSpace:
+            "nowrap",
         }}
       >
         <NavButton
           label="FRONT"
-          active={section === "front"}
+          active={
+            section === "front"
+          }
           onClick={() =>
-            changeSection("front")
+            changeSection(
+              "front"
+            )
           }
         />
 
         <NavButton
           label="SIDE"
-          active={section === "side"}
+          active={
+            section === "side"
+          }
           onClick={() =>
-            changeSection("side")
+            changeSection(
+              "side"
+            )
           }
         />
 
         <NavButton
           label="REAR"
-          active={section === "rear"}
+          active={
+            section === "rear"
+          }
           onClick={() =>
-            changeSection("rear")
+            changeSection(
+              "rear"
+            )
           }
         />
 
@@ -1168,23 +1436,160 @@ function RevueltoShowroom({
           label="EXPLORE"
           active={
             section === null &&
-            !showSpecifications
+            !showSpecifications &&
+            !technicalMode
           }
-          onClick={returnToExplore}
+          onClick={
+            returnToExplore
+          }
         />
 
         <NavButton
           label="SPECS"
-          active={showSpecifications}
-          onClick={toggleSpecifications}
+          active={
+            showSpecifications
+          }
+          onClick={
+            toggleSpecifications
+          }
         />
 
         <NavButton
           label="COMPONENTS"
           active={false}
-          onClick={openComponents}
+          onClick={
+            openComponents
+          }
+        />
+
+        <NavDivider />
+
+        <NavButton
+          label="TECHNICAL"
+          active={
+            technicalMode
+          }
+          onClick={
+            toggleTechnicalMode
+          }
         />
       </div>
+
+      {/* =================================================
+          TECHNICAL MODE VISUAL OVERLAY
+      ================================================= */}
+
+      <div
+        className="technical-overlay"
+        style={{
+          position:
+            "absolute",
+          inset: 0,
+          zIndex: 10,
+          pointerEvents:
+            "none",
+          opacity:
+            technicalMode
+              ? 1
+              : 0,
+          transition:
+            "opacity 0.8s ease",
+          background: `
+            linear-gradient(
+              rgba(120,150,170,0.025),
+              rgba(120,150,170,0.025)
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent 0px,
+              transparent 7px,
+              rgba(150,180,200,0.018) 8px
+            )
+          `,
+        }}
+      />
+
+      {/* =================================================
+          TECHNICAL MODE CORNER MARKERS
+      ================================================= */}
+
+      {technicalMode && (
+        <>
+          <div
+            style={{
+              position:
+                "absolute",
+              zIndex: 15,
+              top: 165,
+              left: 30,
+              pointerEvents:
+                "none",
+              color:
+                "rgba(180,210,225,0.6)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 7,
+                letterSpacing:
+                  "3px",
+                marginBottom: 7,
+              }}
+            >
+              SYSTEM VISUALIZATION
+            </div>
+
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing:
+                  "2px",
+                color:
+                  "rgba(210,230,240,0.8)",
+              }}
+            >
+              TECHNICAL MODE
+            </div>
+          </div>
+
+          <div
+            style={{
+              position:
+                "absolute",
+              zIndex: 15,
+              right: 30,
+              bottom: 30,
+              pointerEvents:
+                "none",
+              textAlign:
+                "right",
+              color:
+                "rgba(180,210,225,0.48)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 7,
+                letterSpacing:
+                  "2.5px",
+              }}
+            >
+              EXTERIOR STRUCTURE
+            </div>
+
+            <div
+              style={{
+                fontSize: 7,
+                letterSpacing:
+                  "2px",
+                marginTop: 6,
+              }}
+            >
+              CONCEPTUAL VISUALIZATION
+            </div>
+          </div>
+        </>
+      )}
 
       {/* =================================================
           3D SHOWROOM
@@ -1192,37 +1597,62 @@ function RevueltoShowroom({
 
       <div
         style={{
-          position: "absolute",
+          position:
+            "absolute",
           inset: 0,
-          opacity: introComplete ? 1 : 0,
-          transition: "opacity 1.4s ease",
+          opacity:
+            introComplete
+              ? 1
+              : 0,
+          transition:
+            "opacity 1.4s ease",
         }}
       >
         <Canvas
           shadows
           camera={{
-            position: [6.5, 2.4, 5.2],
+            position: [
+              6.5,
+              2.4,
+              5.2,
+            ],
             fov: 42,
           }}
         >
           <SmoothCameraController
-            target={inspectionTarget}
+            target={
+              inspectionTarget
+            }
             section={section}
-            resetToken={resetToken}
+            resetToken={
+              resetToken
+            }
           />
 
-          <Environment preset="studio" />
+          <Environment
+            preset="studio"
+          />
 
-          <ambientLight intensity={0.42} />
+          <ambientLight
+            intensity={0.42}
+          />
 
           <directionalLight
-            position={[4, 6, 4]}
+            position={[
+              4,
+              6,
+              4,
+            ]}
             intensity={1.8}
             castShadow
           />
 
           <directionalLight
-            position={[-4, 3, 2]}
+            position={[
+              -4,
+              3,
+              2,
+            ]}
             intensity={0.45}
           />
 
@@ -1232,7 +1662,11 @@ function RevueltoShowroom({
               0,
               0,
             ]}
-            position={[1.3, -0.08, 0]}
+            position={[
+              1.3,
+              -0.08,
+              0,
+            ]}
             receiveShadow
           >
             <planeGeometry
@@ -1258,265 +1692,324 @@ function RevueltoShowroom({
             far={4}
           />
 
-          <RevueltoModel />
+          <RevueltoModel
+            technicalMode={
+              technicalMode
+            }
+          />
 
           {/* =================================================
               FRONT HOTSPOTS
           ================================================= */}
 
-          {section === "front" && (
-            <>
-              <Hotspot
-                position={[
-                  -1.69,
-                  0.48,
-                  0.99,
-                ]}
-                label="LEFT HEADLIGHT"
-                description="Signature LED headlight."
-                onClick={() => {
-                  inspect(
-                    [-3.2, 0.8, 2.25],
-                    [
-                      -1.69,
-                      0.48,
-                      0.99,
-                    ],
-                    "LEFT HEADLIGHT",
-                    "The distinctive LED headlight forms an important part of the Revuelto's sharp front-end design."
-                  );
-                }}
-              />
+          {section === "front" &&
+            !technicalMode && (
+              <>
+                <Hotspot
+                  position={[
+                    -1.69,
+                    0.48,
+                    0.99,
+                  ]}
+                  label="LEFT HEADLIGHT"
+                  description="Signature LED headlight."
+                  onClick={() => {
+                    inspect(
+                      [
+                        -3.2,
+                        0.8,
+                        2.25,
+                      ],
+                      [
+                        -1.69,
+                        0.48,
+                        0.99,
+                      ],
+                      "LEFT HEADLIGHT",
+                      "The distinctive LED headlight forms an important part of the Revuelto's sharp front-end design."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  -1.69,
-                  0.48,
-                  -0.99,
-                ]}
-                label="RIGHT HEADLIGHT"
-                description="Signature LED headlight."
-                onClick={() => {
-                  inspect(
-                    [-3.2, 0.8, -2.25],
-                    [
-                      -1.69,
-                      0.48,
-                      -0.99,
-                    ],
-                    "RIGHT HEADLIGHT",
-                    "The sharp LED lighting signature emphasizes the aggressive geometry of the Revuelto's front fascia."
-                  );
-                }}
-              />
+                <Hotspot
+                  position={[
+                    -1.69,
+                    0.48,
+                    -0.99,
+                  ]}
+                  label="RIGHT HEADLIGHT"
+                  description="Signature LED headlight."
+                  onClick={() => {
+                    inspect(
+                      [
+                        -3.2,
+                        0.8,
+                        -2.25,
+                      ],
+                      [
+                        -1.69,
+                        0.48,
+                        -0.99,
+                      ],
+                      "RIGHT HEADLIGHT",
+                      "The sharp LED lighting signature emphasizes the aggressive geometry of the Revuelto's front fascia."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  -2.15,
-                  0.3,
-                  0,
-                ]}
-                label="FRONT AERO"
-                description="Front aerodynamic elements."
-                onClick={() => {
-                  inspect(
-                    [-3.5, 0.7, 1.6],
-                    [-2.15, 0.3, 0],
-                    "FRONT AERO",
-                    "The front aerodynamic surfaces manage airflow around the vehicle and contribute to its aggressive front design."
-                  );
-                }}
-              />
+                <Hotspot
+                  position={[
+                    -2.15,
+                    0.3,
+                    0,
+                  ]}
+                  label="FRONT AERO"
+                  description="Front aerodynamic elements."
+                  onClick={() => {
+                    inspect(
+                      [
+                        -3.5,
+                        0.7,
+                        1.6,
+                      ],
+                      [
+                        -2.15,
+                        0.3,
+                        0,
+                      ],
+                      "FRONT AERO",
+                      "The front aerodynamic surfaces manage airflow around the vehicle and contribute to its aggressive front design."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  -2.2,
-                  0.55,
-                  0.55,
-                ]}
-                label="FRONT BODY"
-                description="Sculpted front bodywork."
-                onClick={() => {
-                  inspect(
-                    [-3.3, 1.2, 1.7],
-                    [-2.2, 0.55, 0.55],
-                    "FRONT BODY",
-                    "The sculpted front bodywork uses sharp surfaces and aerodynamic geometry to create the vehicle's distinctive front profile."
-                  );
-                }}
-              />
-            </>
-          )}
+                <Hotspot
+                  position={[
+                    -2.2,
+                    0.55,
+                    0.55,
+                  ]}
+                  label="FRONT BODY"
+                  description="Sculpted front bodywork."
+                  onClick={() => {
+                    inspect(
+                      [
+                        -3.3,
+                        1.2,
+                        1.7,
+                      ],
+                      [
+                        -2.2,
+                        0.55,
+                        0.55,
+                      ],
+                      "FRONT BODY",
+                      "The sculpted front bodywork uses sharp surfaces and aerodynamic geometry to create the vehicle's distinctive front profile."
+                    );
+                  }}
+                />
+              </>
+            )}
 
           {/* =================================================
               SIDE HOTSPOTS
           ================================================= */}
 
-          {section === "side" && (
-            <>
-              <Hotspot
-                position={[
-                  -0.65,
-                  0.45,
-                  1,
-                ]}
-                label="FRONT WHEEL"
-                description="Front wheel and tire."
-                onClick={() => {
-                  inspect(
-                    [0, 1, 3],
-                    [
-                      -0.65,
-                      0.45,
-                      1,
-                    ],
-                    "FRONT WHEEL",
-                    "The front wheel and tire package is designed around the vehicle's high-performance character."
-                  );
-                }}
-              />
+          {section === "side" &&
+            !technicalMode && (
+              <>
+                <Hotspot
+                  position={[
+                    -0.65,
+                    0.45,
+                    1,
+                  ]}
+                  label="FRONT WHEEL"
+                  description="Front wheel and tire."
+                  onClick={() => {
+                    inspect(
+                      [
+                        0,
+                        1,
+                        3,
+                      ],
+                      [
+                        -0.65,
+                        0.45,
+                        1,
+                      ],
+                      "FRONT WHEEL",
+                      "The front wheel and tire package is designed around the vehicle's high-performance character."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  -0.65,
-                  0.55,
-                  1.05,
-                ]}
-                label="BRAKE"
-                description="Performance braking system."
-                onClick={() => {
-                  inspect(
-                    [-0.1, 0.85, 2.8],
-                    [
-                      -0.65,
-                      0.55,
-                      1.05,
-                    ],
-                    "BRAKES",
-                    "The braking hardware is designed to handle the high speeds and repeated deceleration expected from a high-performance vehicle."
-                  );
-                }}
-              />
+                <Hotspot
+                  position={[
+                    -0.65,
+                    0.55,
+                    1.05,
+                  ]}
+                  label="BRAKE"
+                  description="Performance braking system."
+                  onClick={() => {
+                    inspect(
+                      [
+                        -0.1,
+                        0.85,
+                        2.8,
+                      ],
+                      [
+                        -0.65,
+                        0.55,
+                        1.05,
+                      ],
+                      "BRAKES",
+                      "The braking hardware is designed to handle the high speeds and repeated deceleration expected from a high-performance vehicle."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  0.9,
-                  0.65,
-                  0.75,
-                ]}
-                label="SIDE INTAKE"
-                description="Side aerodynamic intake."
-                onClick={() => {
-                  inspect(
-                    [1.7, 1.35, 3],
-                    [
-                      0.9,
-                      0.65,
-                      0.75,
-                    ],
-                    "SIDE INTAKE",
-                    "The side intake helps shape airflow around the vehicle while becoming an important part of the Revuelto's visual identity."
-                  );
-                }}
-              />
+                <Hotspot
+                  position={[
+                    0.9,
+                    0.65,
+                    0.75,
+                  ]}
+                  label="SIDE INTAKE"
+                  description="Side aerodynamic intake."
+                  onClick={() => {
+                    inspect(
+                      [
+                        1.7,
+                        1.35,
+                        3,
+                      ],
+                      [
+                        0.9,
+                        0.65,
+                        0.75,
+                      ],
+                      "SIDE INTAKE",
+                      "The side intake helps shape airflow around the vehicle while becoming an important part of the Revuelto's visual identity."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  2.1,
-                  0.45,
-                  0.95,
-                ]}
-                label="REAR WHEEL"
-                description="Rear wheel and tire."
-                onClick={() => {
-                  inspect(
-                    [2.8, 1, 2.8],
-                    [
-                      2.1,
-                      0.45,
-                      0.95,
-                    ],
-                    "REAR WHEEL",
-                    "The rear wheel area emphasizes the vehicle's wide stance and performance-focused proportions."
-                  );
-                }}
-              />
-            </>
-          )}
+                <Hotspot
+                  position={[
+                    2.1,
+                    0.45,
+                    0.95,
+                  ]}
+                  label="REAR WHEEL"
+                  description="Rear wheel and tire."
+                  onClick={() => {
+                    inspect(
+                      [
+                        2.8,
+                        1,
+                        2.8,
+                      ],
+                      [
+                        2.1,
+                        0.45,
+                        0.95,
+                      ],
+                      "REAR WHEEL",
+                      "The rear wheel area emphasizes the vehicle's wide stance and performance-focused proportions."
+                    );
+                  }}
+                />
+              </>
+            )}
 
           {/* =================================================
               REAR HOTSPOTS
           ================================================= */}
 
-          {section === "rear" && (
-            <>
-              <Hotspot
-                position={[
-                  2.85,
-                  0.28,
-                  0,
-                ]}
-                label="REAR DIFFUSER"
-                description="Rear aerodynamic diffuser."
-                onClick={() => {
-                  inspect(
-                    [4.5, 0.55, 1.15],
-                    [
-                      2.85,
-                      0.28,
-                      0,
-                    ],
-                    "REAR DIFFUSER",
-                    "The rear diffuser manages airflow beneath the vehicle and contributes to its aggressive rear appearance."
-                  );
-                }}
-              />
+          {section === "rear" &&
+            !technicalMode && (
+              <>
+                <Hotspot
+                  position={[
+                    2.85,
+                    0.28,
+                    0,
+                  ]}
+                  label="REAR DIFFUSER"
+                  description="Rear aerodynamic diffuser."
+                  onClick={() => {
+                    inspect(
+                      [
+                        4.5,
+                        0.55,
+                        1.15,
+                      ],
+                      [
+                        2.85,
+                        0.28,
+                        0,
+                      ],
+                      "REAR DIFFUSER",
+                      "The rear diffuser manages airflow beneath the vehicle and contributes to its aggressive rear appearance."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  2.35,
-                  0.68,
-                  0.5,
-                ]}
-                label="REAR LIGHT"
-                description="Rear lighting design."
-                onClick={() => {
-                  inspect(
-                    [4.45, 0.95, 1.15],
-                    [
-                      2.35,
-                      0.68,
-                      0.5,
-                    ],
-                    "REAR LIGHTS",
-                    "The rear lighting design continues the sharp geometric language used throughout the vehicle."
-                  );
-                }}
-              />
+                <Hotspot
+                  position={[
+                    2.35,
+                    0.68,
+                    0.5,
+                  ]}
+                  label="REAR LIGHT"
+                  description="Rear lighting design."
+                  onClick={() => {
+                    inspect(
+                      [
+                        4.45,
+                        0.95,
+                        1.15,
+                      ],
+                      [
+                        2.35,
+                        0.68,
+                        0.5,
+                      ],
+                      "REAR LIGHTS",
+                      "The rear lighting design continues the sharp geometric language used throughout the vehicle."
+                    );
+                  }}
+                />
 
-              <Hotspot
-                position={[
-                  2.85,
-                  0.88,
-                  0,
-                ]}
-                label="EXHAUST"
-                description="Rear exhaust area."
-                onClick={() => {
-                  inspect(
-                    [4.35, 0.5, 1.05],
-                    [
-                      2.85,
-                      0.88,
-                      0,
-                    ],
-                    "EXHAUST",
-                    "The rear exhaust area forms part of the Revuelto's performance-focused rear design."
-                  );
-                }}
-              />
-            </>
-          )}
+                <Hotspot
+                  position={[
+                    2.85,
+                    0.88,
+                    0,
+                  ]}
+                  label="EXHAUST"
+                  description="Rear exhaust area."
+                  onClick={() => {
+                    inspect(
+                      [
+                        4.35,
+                        0.5,
+                        1.05,
+                      ],
+                      [
+                        2.85,
+                        0.88,
+                        0,
+                      ],
+                      "EXHAUST",
+                      "The rear exhaust area forms part of the Revuelto's performance-focused rear design."
+                    );
+                  }}
+                />
+              </>
+            )}
         </Canvas>
       </div>
 
@@ -1525,7 +2018,8 @@ function RevueltoShowroom({
       ================================================= */}
 
       {selectedDetail &&
-        !showSpecifications && (
+        !showSpecifications &&
+        !technicalMode && (
           <VehicleInfoPanel
             title={
               selectedDetail.title
@@ -1546,7 +2040,8 @@ function RevueltoShowroom({
       {showSpecifications && (
         <div
           style={{
-            position: "fixed",
+            position:
+              "fixed",
             zIndex: 30,
             top: "150px",
             right: "28px",
@@ -1554,7 +2049,8 @@ function RevueltoShowroom({
             width: "390px",
             maxWidth:
               "calc(100vw - 56px)",
-            overflowY: "auto",
+            overflowY:
+              "auto",
             padding: "30px",
             boxSizing:
               "border-box",
@@ -1575,12 +2071,14 @@ function RevueltoShowroom({
         >
           <div
             style={{
-              display: "flex",
+              display:
+                "flex",
               alignItems:
                 "flex-start",
               justifyContent:
                 "space-between",
-              marginBottom: 30,
+              marginBottom:
+                30,
             }}
           >
             <div>
@@ -1588,7 +2086,8 @@ function RevueltoShowroom({
                 style={{
                   margin: 0,
                   fontSize: 9,
-                  letterSpacing: "3px",
+                  letterSpacing:
+                    "3px",
                   color:
                     "rgba(255,255,255,0.45)",
                 }}
@@ -1602,7 +2101,8 @@ function RevueltoShowroom({
                     "8px 0 0",
                   fontSize: 25,
                   fontWeight: 300,
-                  letterSpacing: "4px",
+                  letterSpacing:
+                    "4px",
                 }}
               >
                 SPECIFICATIONS
@@ -1622,7 +2122,8 @@ function RevueltoShowroom({
                 color: "white",
                 width: 32,
                 height: 32,
-                cursor: "pointer",
+                cursor:
+                  "pointer",
                 fontSize: 16,
               }}
             >
@@ -1687,7 +2188,9 @@ function RevueltoShowroom({
         className="showroom-controls"
         style={{
           opacity:
-            introComplete ? 1 : 0,
+            introComplete
+              ? 1
+              : 0,
           transition:
             "opacity 1.2s ease",
           pointerEvents:
@@ -1696,13 +2199,27 @@ function RevueltoShowroom({
               : "none",
         }}
       >
-        DRAG TO ROTATE
+        {technicalMode
+          ? "TECHNICAL VISUALIZATION"
+          : "DRAG TO ROTATE"}
+
         <span>•</span>
-        SCROLL TO ZOOM
+
+        {technicalMode
+          ? "CONCEPTUAL SYSTEM LAYER"
+          : "SCROLL TO ZOOM"}
+
         <span>•</span>
-        HOVER HOTSPOTS
+
+        {technicalMode
+          ? "SELECT TECHNICAL MODE"
+          : "HOVER HOTSPOTS"}
+
         <span>•</span>
-        CLICK TO INSPECT
+
+        {technicalMode
+          ? "PHASE 01"
+          : "CLICK TO INSPECT"}
       </div>
 
       {/* =================================================
@@ -1723,15 +2240,32 @@ function RevueltoShowroom({
             }
           }
 
+          @media (max-width: 1050px) {
+            .revuelto-showroom button {
+              font-size: 7px;
+            }
+          }
+
           @media (max-width: 800px) {
             .project-k-component-grid {
-              grid-template-columns: repeat(2, minmax(0, 1fr));
+              grid-template-columns:
+                repeat(
+                  2,
+                  minmax(0, 1fr)
+                );
+            }
+          }
+
+          @media (max-width: 700px) {
+            .revuelto-showroom {
+              overflow-y: auto;
             }
           }
 
           @media (max-width: 520px) {
             .project-k-component-grid {
-              grid-template-columns: 1fr;
+              grid-template-columns:
+                1fr;
             }
           }
         `}
@@ -1756,12 +2290,17 @@ function ComponentCard({
   return (
     <button
       onClick={onClick}
-      disabled={!component.available}
+      disabled={
+        !component.available
+      }
       style={{
-        position: "relative",
+        position:
+          "relative",
         minHeight: 150,
-        padding: "22px 23px",
-        textAlign: "left",
+        padding:
+          "22px 23px",
+        textAlign:
+          "left",
         border:
           component.available
             ? "1px solid rgba(255,255,255,0.18)"
@@ -1781,10 +2320,15 @@ function ComponentCard({
             : 0.45,
         transition:
           "all 0.25s ease",
-        overflow: "hidden",
+        overflow:
+          "hidden",
       }}
-      onMouseEnter={(event) => {
-        if (!component.available) {
+      onMouseEnter={(
+        event
+      ) => {
+        if (
+          !component.available
+        ) {
           return;
         }
 
@@ -1797,8 +2341,12 @@ function ComponentCard({
         event.currentTarget.style.transform =
           "translateY(-3px)";
       }}
-      onMouseLeave={(event) => {
-        if (!component.available) {
+      onMouseLeave={(
+        event
+      ) => {
+        if (
+          !component.available
+        ) {
           return;
         }
 
@@ -1812,21 +2360,23 @@ function ComponentCard({
           "translateY(0)";
       }}
     >
-      {/* TOP ROW */}
-
       <div
         style={{
-          display: "flex",
+          display:
+            "flex",
           justifyContent:
             "space-between",
-          alignItems: "flex-start",
-          marginBottom: 28,
+          alignItems:
+            "flex-start",
+          marginBottom:
+            28,
         }}
       >
         <span
           style={{
             fontSize: 7,
-            letterSpacing: "2.5px",
+            letterSpacing:
+              "2.5px",
             color:
               "rgba(255,255,255,0.32)",
           }}
@@ -1837,7 +2387,8 @@ function ComponentCard({
         <span
           style={{
             fontSize: 7,
-            letterSpacing: "2px",
+            letterSpacing:
+              "2px",
             color:
               component.available
                 ? "rgba(255,255,255,0.75)"
@@ -1850,27 +2401,26 @@ function ComponentCard({
         </span>
       </div>
 
-      {/* COMPONENT NAME */}
-
       <div
         style={{
           fontSize: 13,
-          letterSpacing: "3px",
+          letterSpacing:
+            "3px",
           fontWeight: 400,
-          marginBottom: 12,
+          marginBottom:
+            12,
         }}
       >
         {component.name}
       </div>
-
-      {/* DESCRIPTION */}
 
       <div
         style={{
           maxWidth: 270,
           fontSize: 8,
           lineHeight: 1.65,
-          letterSpacing: "0.5px",
+          letterSpacing:
+            "0.5px",
           color:
             "rgba(255,255,255,0.36)",
         }}
@@ -1878,11 +2428,10 @@ function ComponentCard({
         {component.description}
       </div>
 
-      {/* BOTTOM INDICATOR */}
-
       <div
         style={{
-          position: "absolute",
+          position:
+            "absolute",
           left: 0,
           bottom: 0,
           width:
@@ -1919,8 +2468,10 @@ function NavButton({
     <button
       onClick={onClick}
       style={{
-        position: "relative",
-        padding: "11px 17px",
+        position:
+          "relative",
+        padding:
+          "11px 17px",
         border:
           "1px solid " +
           (active
@@ -1934,15 +2485,19 @@ function NavButton({
           active
             ? "white"
             : "rgba(255,255,255,0.52)",
-        cursor: "pointer",
+        cursor:
+          "pointer",
         fontSize: 8,
-        letterSpacing: "2.3px",
+        letterSpacing:
+          "2.3px",
         fontFamily:
           "Arial, Helvetica, sans-serif",
         transition:
           "all 0.22s ease",
       }}
-      onMouseEnter={(event) => {
+      onMouseEnter={(
+        event
+      ) => {
         event.currentTarget.style.color =
           "white";
 
@@ -1951,7 +2506,9 @@ function NavButton({
             "rgba(255,255,255,0.055)";
         }
       }}
-      onMouseLeave={(event) => {
+      onMouseLeave={(
+        event
+      ) => {
         event.currentTarget.style.color =
           active
             ? "white"
@@ -1976,7 +2533,8 @@ function NavButton({
               "translateX(-50%)",
             width: 22,
             height: 1,
-            background: "white",
+            background:
+              "white",
           }}
         />
       )}
@@ -2023,7 +2581,8 @@ function SpecificationCategory({
   return (
     <section
       style={{
-        marginBottom: 28,
+        marginBottom:
+          28,
       }}
     >
       <h3
@@ -2031,7 +2590,8 @@ function SpecificationCategory({
           margin:
             "0 0 12px",
           fontSize: 9,
-          letterSpacing: "3px",
+          letterSpacing:
+            "3px",
           fontWeight: 500,
           color:
             "rgba(255,255,255,0.55)",
@@ -2046,47 +2606,53 @@ function SpecificationCategory({
             "1px solid rgba(255,255,255,0.10)",
         }}
       >
-        {items.map((item) => (
-          <div
-            key={item.label}
-            style={{
-              display: "flex",
-              alignItems:
-                "center",
-              justifyContent:
-                "space-between",
-              gap: 20,
-              minHeight: 42,
-              borderBottom:
-                "1px solid rgba(255,255,255,0.07)",
-            }}
-          >
-            <span
+        {items.map(
+          (item) => (
+            <div
+              key={
+                item.label
+              }
               style={{
-                fontSize: 8,
-                letterSpacing:
-                  "1.4px",
-                color:
-                  "rgba(255,255,255,0.42)",
+                display:
+                  "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+                gap: 20,
+                minHeight: 42,
+                borderBottom:
+                  "1px solid rgba(255,255,255,0.07)",
               }}
             >
-              {item.label}
-            </span>
+              <span
+                style={{
+                  fontSize: 8,
+                  letterSpacing:
+                    "1.4px",
+                  color:
+                    "rgba(255,255,255,0.42)",
+                }}
+              >
+                {item.label}
+              </span>
 
-            <span
-              style={{
-                fontSize: 11,
-                letterSpacing:
-                  "0.4px",
-                textAlign: "right",
-                color:
-                  "rgba(255,255,255,0.9)",
-              }}
-            >
-              {item.value}
-            </span>
-          </div>
-        ))}
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing:
+                    "0.4px",
+                  textAlign:
+                    "right",
+                  color:
+                    "rgba(255,255,255,0.9)",
+                }}
+              >
+                {item.value}
+              </span>
+            </div>
+          )
+        )}
       </div>
     </section>
   );

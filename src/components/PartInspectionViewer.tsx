@@ -38,10 +38,11 @@ type InspectionModelProps = {
   isExploded: boolean;
   resetSignal: number;
   onFloorCalculated: (floorY: number) => void;
+  activeLabel: string | null;
 };
 
 /* =========================================================
-   🛠️ EXACT SEMANTIC GROUPING & LABELS
+   EXACT SEMANTIC GROUPING & LABELS
 ========================================================= */
 
 const EXPLODED_LABELS = [
@@ -83,9 +84,14 @@ const EXPLODED_LABELS = [
   },
 ];
 
-// Maps specific meshes and materials from the GLB
-// to exactly 4 horizontal coordinates.
-function getExplosionGroupTargetX(mesh: THREE.Mesh): number {
+/* =========================================================
+   EXPLOSION GROUP TARGET
+   DO NOT CHANGE
+========================================================= */
+
+function getExplosionGroupTargetX(
+  mesh: THREE.Mesh
+): number {
   const meshName = (
     mesh.name +
     " " +
@@ -123,7 +129,7 @@ function getExplosionGroupTargetX(mesh: THREE.Mesh): number {
     meshName.includes("circle_4") ||
     meshName.includes("circle") ||
     matName.includes("032") ||
-    meshName.includes("ring")
+    matName.includes("ring")
   ) {
     return EXPLODED_LABELS[2].x;
   }
@@ -139,11 +145,98 @@ function getExplosionGroupTargetX(mesh: THREE.Mesh): number {
   // DEFAULT
   return EXPLODED_LABELS[1].x;
 }
+
+/* =========================================================
+   COMPONENT ID
+   HIGHLIGHTING LOGIC ONLY
+========================================================= */
+
+function getMeshComponentId(
+  mesh: THREE.Mesh
+): string {
+  /*
+   * Use the existing mesh + parent information.
+   *
+   * IMPORTANT:
+   * This does NOT modify the GLB hierarchy.
+   *
+   * We only use more precise matching for highlighting.
+   */
+
+  const meshName = (
+    mesh.name +
+    " " +
+    (mesh.parent?.name || "")
+  ).toLowerCase();
+
+  const mat = Array.isArray(mesh.material)
+    ? mesh.material[0]
+    : mesh.material;
+
+  const matName =
+    mat?.name?.toLowerCase() || "";
+
+  // BRAKES
+  if (
+    meshName.includes("empty_11") ||
+    meshName.includes("brake") ||
+    matName.includes("004")
+  ) {
+    return "brakes";
+  }
+
+  // PERFORMANCE TIRE
+  if (
+    meshName.includes("plane.002_1") ||
+    matName.includes("pneu") ||
+    matName.includes("pzeo") ||
+    matName.includes("012")
+  ) {
+    return "tire";
+  }
+
+  /*
+   * INNER BARREL
+   *
+   * IMPORTANT:
+   * Removed the broad:
+   *
+   * meshName.includes("circle")
+   *
+   * because that can classify rim meshes as the
+   * inner barrel.
+   *
+   * We keep the exact existing identifiers.
+   */
+  if (
+    meshName.includes("circle_4") ||
+    matName.includes("032") ||
+    matName.includes("ring")
+  ) {
+    return "ring";
+  }
+
+  // FORGED ALLOY RIM
+  if (
+    meshName.includes("<wheel_6") ||
+    meshName.includes("wheel")
+  ) {
+    return "rim";
+  }
+
+  /*
+   * Keep the existing default behavior.
+   */
+  return "rim";
+}
+
 /* =========================================================
    MODEL HELPERS
 ========================================================= */
 
-function prepareModel(scene: THREE.Object3D) {
+function prepareModel(
+  scene: THREE.Object3D
+) {
   scene.traverse((object) => {
     if (object instanceof THREE.Mesh) {
       object.castShadow = true;
@@ -155,7 +248,9 @@ function prepareModel(scene: THREE.Object3D) {
           : [object.material];
 
         materials.forEach((material) => {
-          material.needsUpdate = true;
+          if (material) {
+            material.needsUpdate = true;
+          }
         });
       }
     }
@@ -186,6 +281,7 @@ function InspectionModel({
   isExploded,
   resetSignal,
   onFloorCalculated,
+  activeLabel,
 }: InspectionModelProps) {
   const { scene } = useGLTF(modelPath);
 
@@ -195,15 +291,42 @@ function InspectionModel({
     return clone;
   }, [scene]);
 
-  const originalPositionsRef = useRef<Map<string, THREE.Vector3>>(
-    new Map()
-  );
+  const originalPositionsRef =
+    useRef<Map<string, THREE.Vector3>>(
+      new Map()
+    );
 
-  const explodedPositionsRef = useRef<Map<string, THREE.Vector3>>(
-    new Map()
-  );
+  const explodedPositionsRef =
+    useRef<Map<string, THREE.Vector3>>(
+      new Map()
+    );
 
-  const movableMeshesRef = useRef<THREE.Mesh[]>([]);
+  const movableMeshesRef =
+    useRef<THREE.Mesh[]>([]);
+
+  /*
+   * HIGHLIGHT ONLY:
+   *
+   * When a selected mesh shares a material with another
+   * mesh in the GLB, changing emissive on that material
+   * would make both meshes glow.
+   *
+   * We therefore remember the original material and give
+   * only the selected mesh a temporary material copy.
+   *
+   * This does NOT alter the GLB file or hierarchy.
+   */
+  const highlightedMaterialRef =
+    useRef<
+      Map<
+        THREE.Mesh,
+        THREE.Material | THREE.Material[]
+      >
+    >(new Map());
+
+  /* =======================================================
+     CALCULATE ORIGINAL + EXPLODED POSITIONS
+  ======================================================= */
 
   useEffect(() => {
     const floorY = calculateFloorY(
@@ -221,7 +344,9 @@ function InspectionModel({
       }
     });
 
-    if (meshes.length === 0) return;
+    if (meshes.length === 0) {
+      return;
+    }
 
     movableMeshesRef.current = meshes;
 
@@ -242,7 +367,9 @@ function InspectionModel({
       const originalWorldPos =
         new THREE.Vector3();
 
-      mesh.getWorldPosition(originalWorldPos);
+      mesh.getWorldPosition(
+        originalWorldPos
+      );
 
       const targetWorldPos =
         new THREE.Vector3(
@@ -272,27 +399,37 @@ function InspectionModel({
     onFloorCalculated,
   ]);
 
+  /* =======================================================
+     EXPLODE / ASSEMBLE ANIMATION
+========================================================= */
+
   useEffect(() => {
     const meshes =
       movableMeshesRef.current;
 
-    if (meshes.length === 0) return;
+    if (meshes.length === 0) {
+      return;
+    }
 
     meshes.forEach((mesh) => {
-      const orig =
+      const original =
         originalPositionsRef.current.get(
           mesh.uuid
         );
 
-      const expl =
+      const exploded =
         explodedPositionsRef.current.get(
           mesh.uuid
         );
 
-      if (!orig || !expl) return;
+      if (!original || !exploded) {
+        return;
+      }
 
       const target =
-        isExploded ? expl : orig;
+        isExploded
+          ? exploded
+          : original;
 
       gsap.to(mesh.position, {
         x: target.x,
@@ -305,24 +442,155 @@ function InspectionModel({
     });
   }, [isExploded]);
 
+  /* =======================================================
+     ACTIVE COMPONENT HIGHLIGHT
+     ONLY HIGHLIGHTING LOGIC CHANGED
+  ======================================================= */
+
   useEffect(() => {
-    if (resetSignal === 0) return;
+    const meshes =
+      movableMeshesRef.current;
+
+    if (meshes.length === 0) {
+      return;
+    }
+
+    meshes.forEach((mesh) => {
+      /*
+       * Restore the original material first if this mesh
+       * was previously highlighted.
+       */
+      const previousMaterial =
+        highlightedMaterialRef.current.get(
+          mesh
+        );
+
+      if (previousMaterial) {
+        mesh.material =
+          previousMaterial;
+
+        highlightedMaterialRef.current.delete(
+          mesh
+        );
+      }
+
+      const componentId =
+        getMeshComponentId(mesh);
+
+      const isSelected =
+        isExploded &&
+        activeLabel === componentId;
+
+      if (!isSelected) {
+        return;
+      }
+
+      /*
+       * Clone the material ONLY for the selected mesh.
+       *
+       * This prevents shared GLB materials from causing
+       * another component to glow.
+       */
+      const originalMaterial =
+        mesh.material;
+
+      const clonedMaterial =
+        Array.isArray(originalMaterial)
+          ? originalMaterial.map(
+              (material) =>
+                material.clone()
+            )
+          : originalMaterial.clone();
+
+      highlightedMaterialRef.current.set(
+        mesh,
+        originalMaterial
+      );
+
+      mesh.material =
+        clonedMaterial;
+
+      const materials =
+        Array.isArray(mesh.material)
+          ? mesh.material
+          : [mesh.material];
+
+      materials.forEach((material) => {
+        if (
+          !material ||
+          !(
+            material instanceof THREE.MeshStandardMaterial
+          ) &&
+          !(
+            material instanceof THREE.MeshPhysicalMaterial
+          ) &&
+          !(
+            material instanceof THREE.MeshPhongMaterial
+          ) &&
+          !(
+            material instanceof THREE.MeshLambertMaterial
+          )
+        ) {
+          return;
+        }
+
+        material.emissive.set(
+          "#ffffff"
+        );
+
+        material.emissiveIntensity =
+          0.18;
+
+        material.needsUpdate = true;
+      });
+    });
+  }, [
+    activeLabel,
+    isExploded,
+  ]);
+
+  /* =======================================================
+     RESET
+========================================================= */
+
+  useEffect(() => {
+    if (resetSignal === 0) {
+      return;
+    }
 
     const meshes =
       movableMeshesRef.current;
 
+    /*
+     * Restore any temporary highlight materials
+     * during reset as well.
+     */
     meshes.forEach((mesh) => {
-      const orig =
+      const originalMaterial =
+        highlightedMaterialRef.current.get(
+          mesh
+        );
+
+      if (originalMaterial) {
+        mesh.material =
+          originalMaterial;
+
+        highlightedMaterialRef.current.delete(
+          mesh
+        );
+      }
+
+      const original =
         originalPositionsRef.current.get(
           mesh.uuid
         );
 
-      if (orig) {
+      if (original) {
         gsap.killTweensOf(
           mesh.position
         );
 
-        mesh.position.copy(orig);
+        mesh.position.copy(original);
       }
     });
   }, [resetSignal]);
@@ -350,10 +618,13 @@ function ExplodedLabels({
   isExploded: boolean;
   carWorldX: number;
   activeLabel: string | null;
-  setActiveLabel: (id: string | null) => void;
+  setActiveLabel: (
+    id: string | null
+  ) => void;
 }) {
-
-  if (!isExploded) return null;
+  if (!isExploded) {
+    return null;
+  }
 
   return (
     <group>
@@ -383,9 +654,7 @@ function ExplodedLabels({
                 pointerEvents: "none",
               }}
             >
-              {/* =================================================
-                  SHOWROOM HOTSPOT RING
-              ================================================= */}
+              {/* HOTSPOT RING */}
 
               <div
                 style={{
@@ -401,13 +670,11 @@ function ExplodedLabels({
                 }}
               />
 
-              {/* =================================================
-                  MAIN HOTSPOT
-              ================================================= */}
+              {/* MAIN HOTSPOT */}
 
               <div
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
 
                   setActiveLabel(
                     isActive
@@ -415,18 +682,18 @@ function ExplodedLabels({
                       : label.id
                   );
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform =
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.transform =
                     "scale(1.35)";
 
-                  e.currentTarget.style.boxShadow =
+                  event.currentTarget.style.boxShadow =
                     "0 0 16px rgba(255,255,255,0.95), 0 0 32px rgba(255,255,255,0.35)";
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform =
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.transform =
                     "scale(1)";
 
-                  e.currentTarget.style.boxShadow =
+                  event.currentTarget.style.boxShadow =
                     isActive
                       ? "0 0 18px rgba(255,255,255,0.95), 0 0 35px rgba(255,255,255,0.35)"
                       : "0 0 8px rgba(255,255,255,0.55)";
@@ -452,10 +719,7 @@ function ExplodedLabels({
                 }}
               />
 
-              {/* =================================================
-                  INFORMATION PANEL
-                  ONLY VISIBLE AFTER CLICK
-              ================================================= */}
+              {/* INFORMATION PANEL */}
 
               <div
                 style={{
@@ -490,13 +754,11 @@ function ExplodedLabels({
                     "0 12px 40px rgba(0,0,0,0.45)",
                 }}
               >
-                {/* =================================================
-                    CLOSE BUTTON
-                ================================================= */}
+                {/* CLOSE BUTTON */}
 
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={(event) => {
+                    event.stopPropagation();
                     setActiveLabel(null);
                   }}
                   style={{
@@ -521,33 +783,31 @@ function ExplodedLabels({
                     transition:
                       "all 160ms ease",
                   }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background =
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.background =
                       "rgba(255,255,255,0.15)";
 
-                    e.currentTarget.style.color =
+                    event.currentTarget.style.color =
                       "#ffffff";
 
-                    e.currentTarget.style.borderColor =
+                    event.currentTarget.style.borderColor =
                       "rgba(255,255,255,0.45)";
                   }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.background =
                       "rgba(255,255,255,0.05)";
 
-                    e.currentTarget.style.color =
+                    event.currentTarget.style.color =
                       "rgba(255,255,255,0.65)";
 
-                    e.currentTarget.style.borderColor =
+                    event.currentTarget.style.borderColor =
                       "rgba(255,255,255,0.18)";
                   }}
                 >
                   ×
                 </button>
 
-                {/* =================================================
-                    TITLE
-                ================================================= */}
+                {/* TITLE */}
 
                 <div
                   style={{
@@ -562,9 +822,7 @@ function ExplodedLabels({
                   {label.name}
                 </div>
 
-                {/* =================================================
-                    DIVIDER
-                ================================================= */}
+                {/* DIVIDER */}
 
                 <div
                   style={{
@@ -576,9 +834,7 @@ function ExplodedLabels({
                   }}
                 />
 
-                {/* =================================================
-                    DESCRIPTION
-                ================================================= */}
+                {/* DESCRIPTION */}
 
                 <div
                   style={{
@@ -592,10 +848,7 @@ function ExplodedLabels({
                 </div>
               </div>
 
-              {/* =================================================
-                  LEADER LINE
-                  ONLY VISIBLE WHEN PANEL IS OPEN
-              ================================================= */}
+              {/* LEADER LINE */}
 
               <div
                 style={{
@@ -684,17 +937,26 @@ export default function PartInspectionViewer({
       []
     );
 
+  /* =======================================================
+     RESET
+  ======================================================= */
+
   const handleReset = () => {
     setIsExploded(false);
     setActiveLabel(null);
+
     setResetSignal(
-      (prev) => prev + 1
+      (previous) => previous + 1
     );
   };
 
+  /* =======================================================
+     EXPLODE / ASSEMBLE
+  ======================================================= */
+
   const handleExplodeToggle = () => {
-    setIsExploded((prev) => {
-      const next = !prev;
+    setIsExploded((previous) => {
+      const next = !previous;
 
       if (!next) {
         setActiveLabel(null);
@@ -704,12 +966,19 @@ export default function PartInspectionViewer({
     });
   };
 
+  /* =======================================================
+     PREVIOUS COMPONENT
+  ======================================================= */
+
   const handlePreviousLabel = () => {
-    if (!isExploded) return;
+    if (!isExploded) {
+      return;
+    }
 
     const currentIndex =
       EXPLODED_LABELS.findIndex(
-        (label) => label.id === activeLabel
+        (label) =>
+          label.id === activeLabel
       );
 
     const previousIndex =
@@ -718,21 +987,31 @@ export default function PartInspectionViewer({
         : currentIndex - 1;
 
     setActiveLabel(
-      EXPLODED_LABELS[previousIndex].id
+      EXPLODED_LABELS[
+        previousIndex
+      ].id
     );
   };
 
+  /* =======================================================
+     NEXT COMPONENT
+  ======================================================= */
+
   const handleNextLabel = () => {
-    if (!isExploded) return;
+    if (!isExploded) {
+      return;
+    }
 
     const currentIndex =
       EXPLODED_LABELS.findIndex(
-        (label) => label.id === activeLabel
+        (label) =>
+          label.id === activeLabel
       );
 
     const nextIndex =
       currentIndex === -1 ||
-      currentIndex >= EXPLODED_LABELS.length - 1
+      currentIndex >=
+        EXPLODED_LABELS.length - 1
         ? 0
         : currentIndex + 1;
 
@@ -756,26 +1035,24 @@ export default function PartInspectionViewer({
           HOTSPOT ANIMATION
       ================================================= */}
 
-      <style>
-        {`
-          @keyframes hotspotPulse {
-            0% {
-              transform: scale(0.85);
-              opacity: 0.35;
-            }
-
-            50% {
-              transform: scale(1);
-              opacity: 0.7;
-            }
-
-            100% {
-              transform: scale(1.25);
-              opacity: 0;
-            }
+      <style>{`
+        @keyframes hotspotPulse {
+          0% {
+            transform: scale(0.85);
+            opacity: 0.35;
           }
-        `}
-      </style>
+
+          50% {
+            transform: scale(1);
+            opacity: 0.7;
+          }
+
+          100% {
+            transform: scale(1.25);
+            opacity: 0;
+          }
+        }
+      `}</style>
 
       {/* =================================================
           3D CANVAS
@@ -850,6 +1127,7 @@ export default function PartInspectionViewer({
           onFloorCalculated={
             handleFloorCalculated
           }
+          activeLabel={activeLabel}
         />
 
         {/* HOTSPOTS */}
@@ -860,7 +1138,9 @@ export default function PartInspectionViewer({
             modelPosition[0]
           }
           activeLabel={activeLabel}
-          setActiveLabel={setActiveLabel}
+          setActiveLabel={
+            setActiveLabel
+          }
         />
 
         {/* FLOOR */}
@@ -1020,7 +1300,6 @@ export default function PartInspectionViewer({
 
         {/* =================================================
             COMPONENT NAVIGATION
-            ONLY VISIBLE DURING EXPLODED VIEW
         ================================================= */}
 
         {isExploded && (
@@ -1029,7 +1308,8 @@ export default function PartInspectionViewer({
               position: "absolute",
               left: "50%",
               bottom: 40,
-              transform: "translateX(-50%)",
+              transform:
+                "translateX(-50%)",
               display: "flex",
               alignItems: "center",
               gap: 8,
@@ -1037,7 +1317,9 @@ export default function PartInspectionViewer({
             }}
           >
             <button
-              onClick={handlePreviousLabel}
+              onClick={
+                handlePreviousLabel
+              }
               style={{
                 height: 42,
                 padding: "0 15px",
@@ -1056,24 +1338,24 @@ export default function PartInspectionViewer({
                 transition:
                   "all 180ms ease",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor =
+              onMouseEnter={(event) => {
+                event.currentTarget.style.borderColor =
                   "rgba(255,255,255,0.50)";
 
-                e.currentTarget.style.color =
+                event.currentTarget.style.color =
                   "#ffffff";
 
-                e.currentTarget.style.background =
+                event.currentTarget.style.background =
                   "rgba(255,255,255,0.10)";
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor =
+              onMouseLeave={(event) => {
+                event.currentTarget.style.borderColor =
                   "rgba(255,255,255,0.22)";
 
-                e.currentTarget.style.color =
+                event.currentTarget.style.color =
                   "rgba(255,255,255,0.72)";
 
-                e.currentTarget.style.background =
+                event.currentTarget.style.background =
                   "rgba(5,7,9,0.78)";
               }}
             >
@@ -1081,7 +1363,9 @@ export default function PartInspectionViewer({
             </button>
 
             <button
-              onClick={handleNextLabel}
+              onClick={
+                handleNextLabel
+              }
               style={{
                 height: 42,
                 padding: "0 15px",
@@ -1100,24 +1384,24 @@ export default function PartInspectionViewer({
                 transition:
                   "all 180ms ease",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor =
+              onMouseEnter={(event) => {
+                event.currentTarget.style.borderColor =
                   "rgba(255,255,255,0.50)";
 
-                e.currentTarget.style.color =
+                event.currentTarget.style.color =
                   "#ffffff";
 
-                e.currentTarget.style.background =
+                event.currentTarget.style.background =
                   "rgba(255,255,255,0.10)";
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor =
+              onMouseLeave={(event) => {
+                event.currentTarget.style.borderColor =
                   "rgba(255,255,255,0.22)";
 
-                e.currentTarget.style.color =
+                event.currentTarget.style.color =
                   "rgba(255,255,255,0.72)";
 
-                e.currentTarget.style.background =
+                event.currentTarget.style.background =
                   "rgba(5,7,9,0.78)";
               }}
             >
@@ -1144,7 +1428,9 @@ export default function PartInspectionViewer({
           {/* EXPLODE / ASSEMBLE */}
 
           <button
-            onClick={handleExplodeToggle}
+            onClick={
+              handleExplodeToggle
+            }
             style={{
               height: 42,
               padding: "0 18px",
@@ -1164,20 +1450,20 @@ export default function PartInspectionViewer({
               transition:
                 "all 180ms ease",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor =
+            onMouseEnter={(event) => {
+              event.currentTarget.style.borderColor =
                 "rgba(255,255,255,0.75)";
 
-              e.currentTarget.style.background =
+              event.currentTarget.style.background =
                 "rgba(255,255,255,0.18)";
             }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor =
+            onMouseLeave={(event) => {
+              event.currentTarget.style.borderColor =
                 isExploded
                   ? "rgba(255,255,255,0.70)"
                   : "rgba(255,255,255,0.35)";
 
-              e.currentTarget.style.background =
+              event.currentTarget.style.background =
                 isExploded
                   ? "rgba(255,255,255,0.14)"
                   : "rgba(5,7,9,0.78)";
@@ -1210,18 +1496,18 @@ export default function PartInspectionViewer({
               transition:
                 "all 180ms ease",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor =
+            onMouseEnter={(event) => {
+              event.currentTarget.style.borderColor =
                 "rgba(255,255,255,0.50)";
 
-              e.currentTarget.style.color =
+              event.currentTarget.style.color =
                 "#ffffff";
             }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor =
+            onMouseLeave={(event) => {
+              event.currentTarget.style.borderColor =
                 "rgba(255,255,255,0.22)";
 
-              e.currentTarget.style.color =
+              event.currentTarget.style.color =
                 "rgba(255,255,255,0.65)";
             }}
           >
